@@ -4,7 +4,7 @@ import pandas as pd
 
 app = Dash(__name__)
 
-df = pd.read_csv("../data/21_22_APPA.csv")
+df = pd.read_csv('APPA data merged.csv', encoding='windows-1252')
 
 app.layout = html.Div([
     html.H1("Dati APPA"),
