@@ -13,29 +13,28 @@ SIDEBAR_STYLE = {
     "top": 0,
     "left": 0,
     "bottom": 0,
-    "width": "16rem",
+    "width": "18rem",
     "padding": "2rem 1rem",
     "background-color": "#f8f9fa",
 }
 
 
 sidebar = html.Div([
-    html.H2("Sidebar", className="display-4"),
+    html.H2("LOGO FBK", className="display-4"),
+    html.Hr(),
     dbc.Nav([
-        dbc.NavLink("Section 1", href="/section-1", active="exact"),
-        dbc.NavLink("Section 2", href="/section-2", active="exact"),
-        dbc.NavLink("Section 3", href="/section-3", active="exact")
+        dbc.NavLink("FBK Raw Data", href="/fbk-raw", active="exact"),
+        dbc.NavLink("FBK Fitted Data", href="/fbk", active="exact"),
+        dbc.NavLink("APPA Data", href="/appa", active="exact")
     ],
         vertical=True,
         pills=True,
-        style=SIDEBAR_STYLE,
     ),
-])
-
-content = html.Div(id="page-content")
+],
+    style=SIDEBAR_STYLE,
+)
 
 app.layout = html.Div([
-    content,
     sidebar,
 
     dash.page_container
