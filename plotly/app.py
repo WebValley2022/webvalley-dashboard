@@ -4,10 +4,24 @@ import pandas as pd
 
 app = Dash(__name__)
 
-df = pd.read_csv("../data/21_22_APPA.csv")
+df = pd.read_csv("../data/merged_APPA_data.csv")
+df.Data = pd.to_datetime(df.Data)
+
+
+def filter_df(df, station, pollutant):
+    mask = (df.Inquinante == pollutant) & (df.Stazione == station)
+    filtered = df[mask]
+    return filtered
+
+
+def resample_df(df, resample_rule):
+    df_mean = df.resample(resample_rule, on='Data').mean()
+    df_mean = df_mean.reset_index()
+    return df_mean
+
 
 app.layout = html.Div([
-    html.H1("Dati APPA"),
+    html.H1(str(df.dtypes)),
     html.Label("Seleziona la stazione"),
     dcc.Dropdown(df.Stazione.unique(), id="input-station"),
     dcc.Dropdown(df.Inquinante.unique(), id='pollutant'),
@@ -20,15 +34,15 @@ app.layout = html.Div([
     Input('input-station', 'value'),
     Input('pollutant', 'value'))
 def update_graph(input_station, pollutant):
-    station_df = df[(df.Stazione == input_station)
-                    & (df.Inquinante == pollutant)]
+    filtered_df = filter_df(df, input_station, pollutant)
+    compressed_df = resample_df(filtered_df, 'W')
 
-    fig = px.line(
-        station_df,
-        x='Data',
-        y='Valore',
-        color='Inquinante'
-    )
+    if compressed_df.shape[0] > 0:
+        fig = px.line(
+            compressed_df,
+            y='Valore',
+            color='Inquinante'
+        )
 
     return fig
 
