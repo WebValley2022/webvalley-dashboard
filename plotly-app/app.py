@@ -8,19 +8,11 @@ app = Dash(__name__,
            use_pages=True,
            external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-SIDEBAR_STYLE = {
-    "position": "fixed",
-    "top": 0,
-    "left": 0,
-    "bottom": 0,
-    "width": "18rem",
-    "padding": "2rem 1rem",
-    "background-color": "#f8f9fa",
-}
-
 
 sidebar = html.Div([
-    html.H2("LOGO FBK", className="display-4"),
+    html.Div([
+        html.Img(src="/assets/fbk-logo.png", className="sidebar-img")],
+        className="sidebar-img-div"),
     html.Hr(),
     dbc.Nav([
         dbc.NavLink("FBK Raw Data", href="/fbk-raw", active="exact"),
@@ -31,7 +23,7 @@ sidebar = html.Div([
         pills=True,
     ),
 ],
-    style=SIDEBAR_STYLE,
+    className="sidebar",
 )
 
 app.layout = html.Div([
