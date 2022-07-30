@@ -1,0 +1,17 @@
+.title {
+    font-weight: 800;
+    font-size: 2rem;
+    margin-left: 18rem;
+    margin-right: 2rem;
+    padding: 1rem 2rem
+}
+
+.sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 18rem;
+        padding: 2rem 1rem;
+        background-color: #fff;
+}
