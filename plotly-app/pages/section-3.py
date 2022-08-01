@@ -5,7 +5,7 @@ import plotly.express as px
 import pandas as pd
 
 dash.register_page(__name__)
-df = pd.read_csv('./data/merged_APPA_data.csv', encoding='windows-1252')
+df = pd.read_csv('./data/merged_APPA_data.zip', encoding='windows-1252')
 
 layout = html.Div(
     [
@@ -31,7 +31,7 @@ layout = html.Div(
     ],
     className="radio-group"
 )
-
+#analyse the input from user
 @callback(
     Output('pollutants_graph', 'figure'),
     Input('radios', 'value'),
