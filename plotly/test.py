@@ -43,7 +43,7 @@ def update_graph(slider_year, slider_month):
     if(slider_year != None):
         date = str(slider_year)+"-"+str(slider_month)
         print(date)
-        df = pd.read_csv('APPA data merged.csv', encoding='windows-1252')
+        df = pd.read_csv('appa_data_26-07-2022.csv', encoding='windows-1252')
         df = df[df.Valore != "n.d."]
         df["Data"] = df.Data.str[0:7]
         df["Valore"] = pd.to_numeric(df.Valore)
