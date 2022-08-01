@@ -20,6 +20,9 @@ sidebar = html.Div([
         dbc.NavLink("FBK Fitted Data", href="/fbk",
                     active="exact", class_name="sidebar-link"),
         dbc.NavLink("APPA Data", href="/appa",
+                    active="exact", class_name="sidebar-link"),
+        html.Hr(),
+        dbc.NavLink("Settings", href="/settings",
                     active="exact", class_name="sidebar-link")
     ],
         vertical=True,
@@ -30,6 +33,7 @@ sidebar = html.Div([
 )
 
 app.layout = html.Div([
+    dcc.Location(id="url"),
     sidebar,
 
     dash.page_container

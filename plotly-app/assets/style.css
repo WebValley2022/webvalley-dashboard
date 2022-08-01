@@ -26,4 +26,9 @@ body{
 .sidebar-link {
     font-size: 13px;
     font-weight: 600;
+    margin: 0.5rem 0;
+}
+
+.btn {
+    border-radius: 10px;
 }
