@@ -67,7 +67,7 @@ def update_daily_graph(pollutant):
 def update_comparison_graph(
     station: str,
     pollutant: str,
-    time_span: int,
+    time_span: str,
     compare_APPA: bool
 ):
     """
@@ -77,14 +77,37 @@ def update_comparison_graph(
     Args:
         station (str): station name
         pollutant (str): pollutant name
-        time_span (int): 0: hour; 1: day; 2: week; 3: month; 4: year
+        time_span (str): H: hour; D: day; W: week; M: month; Y: year
         compare_APPA (bool): wether to add a line of APPA's data or not
     """
+    compare_APPA = True
+    station = "Parco S. Chiara"
+    pollutant = "PM10"
+    time_span = "H"
     fig = go.Figure()
-    prevision_data = data_before[
-        (data_before["station"] == station) &
-        (data_before["pollutant"] == pollutant)
-    ]
+
+    def get_mean(dataframe, time_span, station, pollutant):
+        mean_temp = dataframe[
+            (dataframe["station"] == station) &
+            (dataframe["pollutant"] == pollutant)
+        ].groupby(
+            by = pd.Grouper(
+                key  = "date",
+                freq = time_span
+            )
+        ).mean()
+        mean_temp.insert(1, "pollutant", pollutant)
+        mean_temp.insert(1, "station", station)
+        mean_temp.reset_index(inplace = True)
+
+        return mean_temp
+
+    prevision_data = get_mean(
+        prevision_data,
+        time_span,
+        station,
+        pollutant
+    )
 
     fig.add_trace(
         go.Scatter(
@@ -95,10 +118,12 @@ def update_comparison_graph(
     )
 
     if compare_APPA:
-        appa_data = data_before[
-            (data_before["station"] == station) &
-            (data_before["pollutant"] == "PM2.5")
-        ]
+        appa_data = get_mean(
+            verified_data,
+            time_span,
+            station,
+            pollutant
+        )
 
         fig.add_trace(
             go.Scatter(
@@ -109,5 +134,3 @@ def update_comparison_graph(
         )
 
     return fig
-
-
