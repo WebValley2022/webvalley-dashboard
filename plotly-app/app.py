@@ -1,3 +1,4 @@
+import dash
 from dash import Dash, callback, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -5,17 +6,33 @@ import pandas as pd
 
 app = Dash(__name__,
            use_pages=True,
-           external_stylesheets=[dbc.themes.BOOTSTRAP])
+           external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME])
 
-df = pd.read_csv("../data/merged_APPA_data.csv")
-df.Data = pd.to_datetime(df.Data)
+
+sidebar = html.Div([
+    html.Div([
+        html.Img(src="/assets/fbk-logo.png", className="sidebar-img")],
+        className="sidebar-img-div"),
+    html.Hr(),
+    dbc.Nav([
+        dbc.NavLink("FBK Raw Data", href="/fbk-raw",
+                    active="exact", class_name="sidebar-link"),
+        dbc.NavLink("FBK Fitted Data", href="/fbk",
+                    active="exact", class_name="sidebar-link"),
+        dbc.NavLink("APPA Data", href="/appa",
+                    active="exact", class_name="sidebar-link")
+    ],
+        vertical=True,
+        pills=True,
+    ),
+],
+    className="sidebar",
+)
 
 app.layout = html.Div([
-    html.H1('Dashboard'),
-    html.Label("Seleziona la stazione"),
-    dcc.Dropdown(df.Stazione.unique(), id="input-station"),
-    dcc.Dropdown(df.Inquinante.unique(), id='pollutant'),
-    dcc.Graph(id="pollutants-graph")
+    sidebar,
+
+    dash.page_container
 ])
 
 

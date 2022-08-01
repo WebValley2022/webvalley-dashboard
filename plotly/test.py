@@ -59,8 +59,5 @@ def update_graph(slider_year, slider_month):
         )
         return fig
 
-#def update_container(slider_output_container):
- #   return 'You have selected "{}"'.format(slider_output_container)
-
 if __name__ == "__main__":
     app.run_server(debug=True)
