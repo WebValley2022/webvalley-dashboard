@@ -6,7 +6,7 @@ import pandas as pd
 
 app = Dash(__name__,
            use_pages=True,
-           external_stylesheets=[dbc.themes.BOOTSTRAP])
+           external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME])
 
 
 sidebar = html.Div([
@@ -15,9 +15,12 @@ sidebar = html.Div([
         className="sidebar-img-div"),
     html.Hr(),
     dbc.Nav([
-        dbc.NavLink("FBK Raw Data", href="/fbk-raw", active="exact"),
-        dbc.NavLink("FBK Fitted Data", href="/fbk", active="exact"),
-        dbc.NavLink("APPA Data", href="/appa", active="exact")
+        dbc.NavLink("FBK Raw Data", href="/fbk-raw",
+                    active="exact", class_name="sidebar-link"),
+        dbc.NavLink("FBK Fitted Data", href="/fbk",
+                    active="exact", class_name="sidebar-link"),
+        dbc.NavLink("APPA Data", href="/appa",
+                    active="exact", class_name="sidebar-link")
     ],
         vertical=True,
         pills=True,

@@ -1,18 +1,13 @@
 import dash
 from dash import html, dcc, Input, Output
 import plotly.express as px
+import dash_bootstrap_components as dbc
 import pandas as pd
 
 dash.register_page(__name__)
 
-TITLE_STYLE = {
-    "margin-left": "18rem",
-    "margin-right": "2rem",
-    "padding": "2rem 1rem",
-}
+title = html.Div("FBK Data", className="section-title")
 
-content = html.Div("FBK Data", style=TITLE_STYLE)
-
-layout = html.Div([
-    content
-])
+layout = html.Div(
+    [title],
+    className="section")
