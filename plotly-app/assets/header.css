@@ -1,0 +1,19 @@
+.section-header {
+    position: relative;
+    margin-left: 10rem;
+    margin-top: 2rem;
+    margin-right: 4rem;
+    font-weight: 800;
+    font-size: 2rem;
+    padding: 0rem 4rem;
+}
+
+.download-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.dropdown {
+    color: white;
+}
