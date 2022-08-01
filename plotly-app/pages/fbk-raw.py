@@ -21,7 +21,7 @@ download_btn = dbc.Button(
     "Download full data",
     outline=True,
     color="primary",
-    class_name="header-btn"
+    class_name="download-btn"
 )
 
 header = html.Div(

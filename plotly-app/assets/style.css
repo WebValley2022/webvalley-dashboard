@@ -2,14 +2,6 @@ body{
     background-color: #eff4f9;
 }
 
-.section-header {
-    display: flex;
-    margin-left: 10rem;
-    font-weight: 800;
-    font-size: 2rem;
-    padding: 2rem 4rem;
-}
-
 .sidebar {
         position: fixed;
         top: 0;
