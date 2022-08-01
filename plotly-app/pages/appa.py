@@ -1,3 +1,4 @@
+from click import option
 import dash
 from dash import html, dcc, Input, Output, callback
 import plotly.express as px
@@ -31,24 +32,7 @@ download_btn = dbc.Button(
     class_name="download-btn"
 )
 
-gas_btns = html.Div(
-    [
-        dbc.RadioItems(
-            id="radios",
-            class_name="btn-group",
-            input_class_name="btn-check",
-            label_class_name="btn btn-outline-primary",
-            label_checked_class_name="active",
-            options=[
-                {}
-                {"label": "Gas 1", "value": 1},
-                {"label": "Gas 2", "value": 2},
-                {"label": "Gas 3", "value": 3}
-            ],
-            value=1,
-        )
-    ],
-    className="radio-group")
+gas_btns = html.Div(id="buttons", className="radio-group")
 
 header = html.Div(
     [title, dropdown, download_btn, gas_btns],
@@ -56,10 +40,21 @@ header = html.Div(
 )
 
 
-@callback(Output("filtered-df", "df"), Input("selected-station", "value"))
-def get_station_df(selected_station):
+@callback(Output("buttons", "children"), Input("selected-station", "value"))
+def get_pollutants(selected_station):
     filtered_df = df[df.Stazione == selected_station]
-    return filtered_df
+    pollutants = filtered_df.Inquinante.unique()
+    pollutants_dict = [{"label": pollutant, "value": pollutant}
+                       for pollutant in pollutants]
+
+    return dbc.RadioItems(
+        id="pollutants",
+        class_name="btn-group",
+        input_class_name="btn-check",
+        label_class_name="btn btn-outline-primary",
+        label_checked_class_name="active",
+        options=pollutants_dict
+    )
 
 
 layout = html.Div(
