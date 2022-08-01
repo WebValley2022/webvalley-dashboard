@@ -9,7 +9,7 @@ dash.register_page(__name__)
 title = html.Div("FBK Fitted Data", className="header-title")
 
 dropdown = dbc.DropdownMenu(
-    label="Stazione",
+    label="Select location",
     children=[
         dbc.DropdownMenuItem("Trento - S. Chiara"),
         dbc.DropdownMenuItem("Trento - Via Bolzano")
