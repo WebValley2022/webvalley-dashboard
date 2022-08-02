@@ -4,9 +4,6 @@ from dash import html, dcc, Input, Output, callback
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
-from matplotlib.pyplot import xticks
-import matplotlib as plt
-import seaborn as sns
 
 dash.register_page(__name__)
 
@@ -14,7 +11,6 @@ title = html.Div("APPA Data", className="header-title")
 
 df = pd.read_csv("../data/merged_APPA_data.csv")
 df.Data = pd.to_datetime(df.Data)
-print(df.dtypes)
 stations = df.Stazione.unique()
 
 dropdown = dcc.Dropdown(
@@ -34,12 +30,15 @@ header = html.Div(
     className="section-header"
 )
 
-plot = html.Div(
-    dcc.Graph(id="main-plot"),
-    className="main-plot-ct"
-)
+main_plot = html.Div([dcc.Graph(id="main-plot"),
+                      "Show: ",
+                      dcc.Dropdown(options=[
+                                   "last day", "last week", "last month", "last year", "all"],
+                                   id="selected-time", value="last month", className="dropdown")],
+                     className="main-plot-ct"
+                     )
 
-content = html.Div([plot], className="content")
+content = html.Div([main_plot], className="content")
 
 
 @callback(Output("buttons", "children"), Input("selected-station", "value"))
@@ -62,10 +61,19 @@ def get_pollutants(selected_station):
 
 @callback(Output("main-plot", "figure"),
           Input("selected-station", "value"),
-          Input("selected-pollutant", "value"))
-def update_main_plot(selected_station, selected_pollutant):
+          Input("selected-pollutant", "value"),
+          Input("selected-time", "value"))
+def update_main_plot(selected_station, selected_pollutant, selected_time):
     data = df[(df.Stazione == selected_station) &
               (df.Inquinante == selected_pollutant)]
+    if selected_time == "last day":
+        last_day = data.Data.max().day
+        data = data[data.Data.day == last_day]
+    elif selected_time == "last week":
+        last_week = data.Data.max().week
+        data = data[data.Data.week == last_week]
+    # elif selected_time == "last month":
+    #     last_month = data.Data
     fig = px.line(
         data,
         x="Data",
@@ -77,13 +85,3 @@ layout = html.Div(
     [header,
      content],
     className="section")
-
-# dropdown1 = dbc.DropdownMenu(
-#     # html.I(className="fa-solid fa-location-dot"),
-#     label="Select location",
-#     children=[
-#         dbc.DropdownMenuItem(station) for station in stations
-#         # dbc.DropdownMenuItem("Trento - S. Chiara"),
-#         # dbc.DropdownMenuItem("Trento - Via Bolzano")
-#     ],
-#     color="secondary",)
