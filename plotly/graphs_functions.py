@@ -1,6 +1,22 @@
 #####################
-# NEEDED DATAFRAMES #
+#  UTILS FUNCTIONS  #
 #####################
+
+def get_mean(dataframe, time_span, station, pollutant):
+        mean_temp = dataframe[
+            (dataframe["station"] == station) &
+            (dataframe["pollutant"] == pollutant)
+        ].groupby(
+            by = pd.Grouper(
+                key  = "date",
+                freq = time_span
+            )
+        ).mean()
+        mean_temp.insert(1, "pollutant", pollutant)
+        mean_temp.insert(1, "station", station)
+        mean_temp.reset_index(inplace = True)
+
+        return mean_temp
 
 ###########################################
 # MAIN DAILY GRAPH OF PERCENTAGE TO LIMIT #
@@ -87,22 +103,6 @@ def update_comparison_graph(
     pollutant = "PM10"
     time_span = "H"
     fig = go.Figure()
-
-    def get_mean(dataframe, time_span, station, pollutant):
-        mean_temp = dataframe[
-            (dataframe["station"] == station) &
-            (dataframe["pollutant"] == pollutant)
-        ].groupby(
-            by = pd.Grouper(
-                key  = "date",
-                freq = time_span
-            )
-        ).mean()
-        mean_temp.insert(1, "pollutant", pollutant)
-        mean_temp.insert(1, "station", station)
-        mean_temp.reset_index(inplace = True)
-
-        return mean_temp
 
     prevision_data = get_mean(
         prevision_data,
