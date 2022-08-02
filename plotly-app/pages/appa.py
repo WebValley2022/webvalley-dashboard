@@ -28,7 +28,7 @@ download_btn = dbc.Button(
 gas_btns = html.Div(id="buttons", className="radio-group")
 
 header = html.Div(
-    [title, dropdown, download_btn, gas_btns, plot1],
+    [title, dropdown, download_btn, gas_btns],
     className="section-header"
 )
 
@@ -53,7 +53,6 @@ def get_pollutants(selected_station):
         label_checked_class_name="active",
         options=pollutants_dict
     )
-
 
 layout = html.Div(
     [header,
