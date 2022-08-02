@@ -39,14 +39,18 @@ header = html.Div(
     className="section-header"
 )
 
-comparison_graph = html.Div([dcc.Graph(id="comparison-graph"),
-                            daq.ToggleSwitch(id="toggle-comparison",
-                                             label="Compare with APPA",
-                                             color="#0d6efd"),
-                            dcc.Dropdown(id="selected-period",
+graph_selectors = html.Div([dcc.Dropdown(id="selected-period",
                                          options=['day', 'week',
                                                   'month', 'year', 'all'],
-                                         className="dropdown")])
+                                         className="dropdown"),
+                            daq.ToggleSwitch(id="toggle-comparison",
+                                             label="Compare with APPA",
+                                             color="#0d6efd",
+                                             className="ml-auto")],
+                           className="d-flex flex-grow")
+
+comparison_graph = html.Div(
+    [dcc.Graph(id="comparison-graph"), graph_selectors])
 
 content = html.Div([comparison_graph], className="content")
 
