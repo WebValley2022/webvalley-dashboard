@@ -81,7 +81,6 @@ def update_main_plot(selected_station, selected_pollutant, selected_time):
     )
     return fig
 
-
 layout = html.Div(
     [header,
      content],
