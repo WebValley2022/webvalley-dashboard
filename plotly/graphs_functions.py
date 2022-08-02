@@ -1,6 +1,31 @@
 #####################
-# NEEDED DATAFRAMES #
+#  UTILS FUNCTIONS  #
 #####################
+
+pollutant_limit = {
+    "Ossido di Carbonio": 10, # daily mean maximum, correct
+    "Biossido di Azoto": 200, # daily mean mixxing, used hour, incorrect, aprroximated
+    "Biossido Zolfo": 125,    # daily mean maximum, correct
+    "Ozono": 120,             # daily mean maximum, correct
+    "PM10": 50,               # daily mean maximum, correct
+    "PM2.5": 25               # daily mean missing, used year, incorrect, approximated
+}
+
+def get_mean(dataframe, time_span, station, pollutant):
+        mean_temp = dataframe[
+            (dataframe["station"] == station) &
+            (dataframe["pollutant"] == pollutant)
+        ].groupby(
+            by = pd.Grouper(
+                key  = "date",
+                freq = time_span
+            )
+        ).mean()
+        mean_temp.insert(1, "pollutant", pollutant)
+        mean_temp.insert(1, "station", station)
+        mean_temp.reset_index(inplace = True)
+
+        return mean_temp
 
 ###########################################
 # MAIN DAILY GRAPH OF PERCENTAGE TO LIMIT #
@@ -9,6 +34,9 @@
     Output('daily-percentage-graph', 'figure'),
     Input('radio-pollutant-selector', 'value')
 )
+# VARIABLES NEEDED:
+#   - station_data_percentage: dataframe with percentage of pollutant value from the maximum legal level
+#   - SELECTED_STATION: the station that will be displayed
 def update_daily_graph(pollutant):
     # date used to separate data
     today = dt.date(2022, 7, 10)
@@ -64,6 +92,8 @@ def update_daily_graph(pollutant):
 ####################
 
 # TODO: add callback
+# VARIABLES NEEDED: verified_data -> appa's certified data
+#                   prevision_data -> FBK model's prediction 
 def update_comparison_graph(
     station: str,
     pollutant: str,
@@ -85,22 +115,6 @@ def update_comparison_graph(
     pollutant = "PM10"
     time_span = "H"
     fig = go.Figure()
-
-    def get_mean(dataframe, time_span, station, pollutant):
-        mean_temp = dataframe[
-            (dataframe["station"] == station) &
-            (dataframe["pollutant"] == pollutant)
-        ].groupby(
-            by = pd.Grouper(
-                key  = "date",
-                freq = time_span
-            )
-        ).mean()
-        mean_temp.insert(1, "pollutant", pollutant)
-        mean_temp.insert(1, "station", station)
-        mean_temp.reset_index(inplace = True)
-
-        return mean_temp
 
     prevision_data = get_mean(
         prevision_data,
@@ -134,3 +148,9 @@ def update_comparison_graph(
         )
 
     return fig
+
+########################################
+# SECTION 2 GRAPH FOR POLLUTANT TRENDS #
+########################################
+
+

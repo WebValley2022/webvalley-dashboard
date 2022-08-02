@@ -11,7 +11,7 @@ app = Dash(__name__,
 
 sidebar = html.Div([
     html.Div([
-        html.Img(src="/assets/fbk-logo.png", className="sidebar-img")],
+        html.Img(src="/assets/img/fbk-logo.png", className="sidebar-img")],
         className="sidebar-img-div"),
     html.Hr(),
     dbc.Nav([
@@ -26,7 +26,7 @@ sidebar = html.Div([
                     active="exact", class_name="sidebar-link")
     ],
         vertical=True,
-        pills=True,
+        pills=False,
     ),
 ],
     className="sidebar",
@@ -41,4 +41,4 @@ app.layout = html.Div([
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True, dev_tools_hot_reload=False)

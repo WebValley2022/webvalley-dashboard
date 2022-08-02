@@ -127,5 +127,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+<<<<<<< HEAD
 
 data/merged_APPA_data.csv
+=======
+data/merged_APPA_data.csv
+data/21_22_APPA.csv
+pokemon.csv
+plotly-app/other-pages
+plotly-app/data/
+images/
+plotly/pokemon.py
+>>>>>>> 380df035c85a0083dca731a591554cb1a1f25a93

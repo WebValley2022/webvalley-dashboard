@@ -27,7 +27,7 @@ app.layout= html.Div([
         dcc.Graph(id="graph"),
 ])
 
-def update_plot2(input= "dropdown"):
+def update_plot2(dropdown):
     gas = "PM10"
     return
 

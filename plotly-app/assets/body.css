@@ -1,4 +1,4 @@
-.section-header {
+.content {
     position: relative;
     margin-left: 10rem;
     margin-top: 2rem;
@@ -8,13 +8,6 @@
     padding-left: 2rem;
 }
 
-.download-btn {
-    position: absolute;
-    right: 0;
-    top: 0;
-}
-
-.dropdown {
-    color: black;
-    font-size: 12px;
+.main-plot-ct {
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
