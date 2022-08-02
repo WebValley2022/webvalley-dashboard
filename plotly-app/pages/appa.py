@@ -4,7 +4,7 @@ from dash import html, dcc, Input, Output, callback
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
-from matplotlib.pyplot import xticks 
+from matplotlib.pyplot import xticks
 import matplotlib as plt
 import seaborn as sns
 
@@ -12,11 +12,13 @@ dash.register_page(__name__)
 
 title = html.Div("APPA Data", className="header-title")
 
-df = pd.read_csv("./data/merged_APPA_data.zip")
+df = pd.read_csv("../data/merged_APPA_data.csv")
+df.Data = pd.to_datetime(df.Data)
+print(df.dtypes)
 stations = df.Stazione.unique()
 
 dropdown = dcc.Dropdown(
-    stations, placeholder="Select station", id='selected_station', className="dropdown"
+    stations, id='selected-station', className="dropdown", value=stations[0]
 )
 
 download_btn = dbc.Button(
@@ -28,15 +30,17 @@ download_btn = dbc.Button(
 gas_btns = html.Div(id="buttons", className="radio-group")
 
 header = html.Div(
-    [title, dropdown, download_btn, gas_btns, plot1],
+    [title, dropdown, download_btn, gas_btns],
     className="section-header"
 )
 
-@callback(
-    #Output("filtered-df", "df"),
-    Output('pollutants_plot', 'figure'),
-    Input("selected_station", "value")
-    )
+plot = html.Div(
+    dcc.Graph(id="main-plot"),
+    className="main-plot-ct"
+)
+
+content = html.Div([plot], className="content")
+
 
 @callback(Output("buttons", "children"), Input("selected-station", "value"))
 def get_pollutants(selected_station):
@@ -46,18 +50,33 @@ def get_pollutants(selected_station):
                        for pollutant in pollutants]
 
     return dbc.RadioItems(
-        id="pollutants",
+        id="selected-pollutant",
         class_name="btn-group",
         input_class_name="btn-check",
         label_class_name="btn btn-outline-primary",
         label_checked_class_name="active",
-        options=pollutants_dict
+        options=pollutants_dict,
+        value=pollutants_dict[0]
     )
+
+
+@callback(Output("main-plot", "figure"),
+          Input("selected-station", "value"),
+          Input("selected-pollutant", "value"))
+def update_main_plot(selected_station, selected_pollutant):
+    data = df[(df.Stazione == selected_station) &
+              (df.Inquinante == selected_pollutant)]
+    fig = px.line(
+        data,
+        x="Data",
+        y="Valore"
+    )
+    return fig
 
 
 layout = html.Div(
     [header,
-     html.P(id="response", children=[], style={"display": "none"})],
+     content],
     className="section")
 
 # dropdown1 = dbc.DropdownMenu(
