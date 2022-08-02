@@ -1,3 +1,5 @@
+from statistics import mean
+from time import time
 import dash
 from dash import html, dcc, Input, Output, callback
 import dash_daq as daq
@@ -5,6 +7,7 @@ import plotly.graph_objs as go
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
+from soupsieve import select
 
 dash.register_page(__name__)
 
@@ -15,8 +18,8 @@ appa_df = appa_df[appa_df.Valore != 'n.d.']
 appa_df.Data = pd.to_datetime(appa_df.Data)
 
 fbk_df = pd.read_csv("../data/19_20_APPA.csv")
-fbk_df = appa_df[appa_df.Valore != 'n.d.']
-fbk_df.Data = pd.to_datetime(appa_df.Data)
+fbk_df = fbk_df[fbk_df.Valore != 'n.d.']
+fbk_df.Data = pd.to_datetime(fbk_df.Data)
 fbk_stations = fbk_df.Stazione.unique()
 
 dropdown = dcc.Dropdown(
@@ -39,7 +42,11 @@ header = html.Div(
 comparison_graph = html.Div([dcc.Graph(id="comparison-graph"),
                             daq.ToggleSwitch(id="toggle-comparison",
                                              label="Compare with APPA",
-                                             color="#0d6efd")])
+                                             color="#0d6efd"),
+                            dcc.Dropdown(id="selected-period",
+                                         options=['day', 'week',
+                                                  'month', 'year', 'all'],
+                                         className="dropdown")])
 
 content = html.Div([comparison_graph], className="content")
 
@@ -61,17 +68,20 @@ def get_pollutants(selected_station):
         value=pollutants_list[0]["value"]
     )
 
+# TODO: Fix labels.
+
 
 @callback(Output("comparison-graph", "figure"),
           Input("selected-station", "value"),
           Input("selected-fbk-pollutant", "value"),
-          Input("toggle-comparison", "value")
+          Input("toggle-comparison", "value"),
+          Input("selected-period", "value")
           )
 def update_comparison_graph(
-    selected_station,
-    selected_pollutant,
-    toggle_comparison,
-):
+        selected_station,
+        selected_pollutant,
+        toggle_comparison,
+        selected_period):
     """
     Updates the graph representing the comparison between
     APPA data and model prediction
@@ -85,50 +95,53 @@ def update_comparison_graph(
     Returns:
         plotly.graph_objs.Figure: the graph
     """
+
     fig = go.Figure()
 
     estimated_data = get_mean(
         fbk_df,
-        "w",
         selected_station,
-        selected_pollutant
+        selected_pollutant,
+        selected_period
     )
 
     fig.add_trace(
         go.Scatter(
             x=estimated_data["Data"],
             y=estimated_data["Valore"],
-            mode="lines+markers"
+            mode="lines+markers",
+            name="FBK"
         )
     )
 
     if toggle_comparison:
         appa_data = get_mean(
             appa_df,
-            'W',
             selected_station,
-            selected_pollutant
+            selected_pollutant,
+            selected_period
         )
 
         fig.add_trace(
             go.Scatter(
                 x=appa_data["Data"],
                 y=appa_data["Valore"],
-                mode="lines+markers"
+                mode="lines+markers",
+                name="APPA",
             )
         )
 
     return fig
 
 
-def get_mean(dataframe: pd.DataFrame, time_span: str, station: str, pollutant: str) -> pd.DataFrame:
+def get_mean(dataframe: pd.DataFrame, station: str, pollutant: str, selected_period) -> pd.DataFrame:
     """
     Gets the mean of a given time span from the given station
     and pollutant in the given dataframe
 
     Args:
         dataframe (pd.DataFrame): the input dataframe to be processed
-        time_span (str): values can be 'D': day, 'Y': year, 'H': hour
+        time_span (str): values can be 'D': day, 'W': week, 'Y': year, 'H': hour
         station (str): the station where to get the data
         pollutant (str): the desired pollutant
 
@@ -138,7 +151,26 @@ def get_mean(dataframe: pd.DataFrame, time_span: str, station: str, pollutant: s
     mean_temp = dataframe[
         (dataframe["Stazione"] == station) &
         (dataframe["Inquinante"] == pollutant)
-    ].groupby(
+    ]
+    last_day = mean_temp.Data.max()
+
+    if selected_period == "day":
+        time_span = "H"
+        mean_temp = mean_temp[mean_temp.Data == last_day]
+    elif selected_period == "week":
+        time_span = "H"
+        mean_temp = mean_temp[mean_temp.Data.dt.week == last_day.week]
+    elif selected_period == "month":
+        time_span = "D"
+        mean_temp = mean_temp[(mean_temp.Data.dt.month == last_day.month) & (
+            mean_temp.Data.dt.year == last_day.year)]
+    elif selected_period == "year":
+        time_span = "W"
+        mean_temp = mean_temp[(mean_temp.Data.dt.year == last_day.year)]
+    else:
+        time_span = "W"
+
+    mean_temp = mean_temp.groupby(
         by=pd.Grouper(
             key="Data",
             freq=time_span
