@@ -26,7 +26,7 @@ sidebar = html.Div([
                     active="exact", class_name="sidebar-link")
     ],
         vertical=True,
-        pills=False,
+        pills=True,
     ),
 ],
     className="sidebar",
@@ -41,4 +41,4 @@ app.layout = html.Div([
 
 
 if __name__ == "__main__":
-    app.run(debug=True, dev_tools_hot_reload=False)
+    app.run(debug=True)
