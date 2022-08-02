@@ -39,16 +39,17 @@ year_plot = dcc.Graph(id="year-plot", className="side-plot")
 
 weekly_plot = dcc.Graph(id="weekly-plot", className="side-plot")
 
-side_plots = html.Div([year_plot, weekly_plot], className="side-plots-ct")
+side_plots = html.Div([year_plot], className="side-plots-ct")
 
-content = html.Div([main_plot, side_plots], className="content")
+content = html.Div([main_plot, side_plots],
+                   className="d-flex content")
 
 
 @callback(Output("appa-pollutants", "children"), Input("selected-appa-station", "value"))
 def get_pollutants(selected_appa_station):
     filtered_df = df[df.Stazione == selected_appa_station]
     pollutants = filtered_df.Inquinante.unique()
-    pollutants_dict = [{"label": pollutant, "value": pollutant}
+    pollutants_list = [{"label": pollutant, "value": pollutant}
                        for pollutant in pollutants]
 
     return dbc.RadioItems(
@@ -57,8 +58,8 @@ def get_pollutants(selected_appa_station):
         input_class_name="btn-check",
         label_class_name="btn btn-outline-primary",
         label_checked_class_name="active",
-        options=pollutants_dict,
-        value=pollutants_dict[0]
+        options=pollutants_list,
+        value=pollutants_list[0]["value"]
     )
 
 
@@ -84,11 +85,8 @@ def update_main_plot(selected_appa_station, selected_pollutant):
 def update_year_plot(selected_appa_station, selected_pollutant):
     data = df[(df.Stazione == selected_appa_station) &
               (df.Inquinante == selected_pollutant)]
-    df_year = data.groupby(pd.PeriodIndex(data['Data'], freq="M"))[
-        'Valore'].mean()
-    df_year = df_year.reset_index()
-    df_year = df_year.groupby(
-        [df_year.Data.dt.year, df_year.Data.dt.month]).mean()
+    df_year = data.groupby(
+        [data.Data.dt.year, data.Data.dt.month]).mean()
     df_year.index.names = ["Year", "Month"]
     df_year = df_year.reset_index()
     fig = px.line(
@@ -96,29 +94,6 @@ def update_year_plot(selected_appa_station, selected_pollutant):
         y="Valore",
         x="Month",
         color="Year"
-    )
-
-    return fig
-
-
-@callback(Output("weekly-plot", "figure"),
-          Input("selected-appa-station", "value"),
-          Input("selected-pollutant", "value"))
-def update_weekly_plot(selected_appa_station, selected_pollutant):
-    data2 = df[(df.Stazione == selected_appa_station) &
-               (df.Inquinante == selected_pollutant)]
-    print(data2)
-    df_weekly = data2.groupby(
-        [data2.Data.dt.month, data2.Data.dt.day_of_week]).mean()
-    df_weekly.index.names = ["Month", "WeekDay"]
-    print(df_weekly)
-    df_weekly = df_weekly.reset_index()
-
-    fig = px.line(
-        df_weekly,
-        y="Valore",
-        x="WeekDay",
-        color="Month"
     )
 
     return fig
