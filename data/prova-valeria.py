@@ -6,7 +6,7 @@ import pandas as pd
 #from matplotlib import pyplot as plt
 #import seaborn as sns
 
-df=pd.read_csv("merged_APPA_data.csv", encoding='windows-1252') 
+df=pd.read_csv("/home/wvuser/webvalley-dashboard/data/merged_APPA_data.csv", encoding='windows-1252') 
 df=df[df.Valore != 'n.d.']
 df.Valore= pd.to_numeric(df.Valore)
 #df.head()
@@ -37,10 +37,14 @@ def update_plot2(input= "dropdown"):
 )
 def update_Graph(graph):
     fig= px.line(
-        df,
+        df[
+            df["Stazione"] == "Parco S. Chiara"
+        ],
         x="mese",
-        y="Valore"
+        y="Valore",
+        color = "Inquinante"
     )
     return fig  
 
-app.run_server(debug=True,port=8052)
+app.run_server(debug=True,port=6969)
+
