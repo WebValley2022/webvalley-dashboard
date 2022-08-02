@@ -2,6 +2,15 @@
 #  UTILS FUNCTIONS  #
 #####################
 
+pollutant_limit = {
+    "Ossido di Carbonio": 10, # daily mean maximum, correct
+    "Biossido di Azoto": 200, # daily mean mixxing, used hour, incorrect, aprroximated
+    "Biossido Zolfo": 125,    # daily mean maximum, correct
+    "Ozono": 120,             # daily mean maximum, correct
+    "PM10": 50,               # daily mean maximum, correct
+    "PM2.5": 25               # daily mean missing, used year, incorrect, approximated
+}
+
 def get_mean(dataframe, time_span, station, pollutant):
         mean_temp = dataframe[
             (dataframe["station"] == station) &
@@ -25,6 +34,9 @@ def get_mean(dataframe, time_span, station, pollutant):
     Output('daily-percentage-graph', 'figure'),
     Input('radio-pollutant-selector', 'value')
 )
+# VARIABLES NEEDED:
+#   - station_data_percentage: dataframe with percentage of pollutant value from the maximum legal level
+#   - SELECTED_STATION: the station that will be displayed
 def update_daily_graph(pollutant):
     # date used to separate data
     today = dt.date(2022, 7, 10)
@@ -136,3 +148,9 @@ def update_comparison_graph(
         )
 
     return fig
+
+########################################
+# SECTION 2 GRAPH FOR POLLUTANT TRENDS #
+########################################
+
+
