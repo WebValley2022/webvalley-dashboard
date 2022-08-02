@@ -64,6 +64,8 @@ def update_daily_graph(pollutant):
 ####################
 
 # TODO: add callback
+# VARIABLES NEEDED: verified_data -> appa's certified data
+#                   prevision_data -> FBK model's prediction 
 def update_comparison_graph(
     station: str,
     pollutant: str,
