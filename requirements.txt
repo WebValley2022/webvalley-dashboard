@@ -8,3 +8,4 @@ dash_daq
 soupsieve
 bs4
 sklearn
+psycopg2
