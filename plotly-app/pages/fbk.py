@@ -156,6 +156,7 @@ def get_mean(dataframe: pd.DataFrame, station: str, pollutant: str, selected_per
         (dataframe["Stazione"] == station) &
         (dataframe["Inquinante"] == pollutant)
     ]
+
     last_day = mean_temp.Data.max()
 
     if selected_period == "day":

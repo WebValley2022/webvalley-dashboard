@@ -1,4 +1,3 @@
-from click import option
 import dash
 from dash import html, dcc, Input, Output, callback
 import plotly.express as px
@@ -12,6 +11,13 @@ df = pd.read_csv("../data/21_22_APPA.csv")
 df = df[df.Valore != "n.d."]
 df.Data = pd.to_datetime(df.Data)
 stations = df.Stazione.unique()
+
+
+def filter_df(df, station, pollutant):
+    return df[
+        (df.Stazione == station) & (
+            df.Inquinante == pollutant)
+    ]
 
 
 @callback(
@@ -38,12 +44,10 @@ def get_pollutants(selected_appa_station):
 @callback(
     Output("main-plot", "figure"),
     Input("selected-appa-station", "value"),
-    Input("selected-pollutant", "value"),
+    Input("selected-pollutant", "value")
 )
 def update_main_plot(selected_appa_station, selected_pollutant):
-    data = df[
-        (df.Stazione == selected_appa_station) & (df.Inquinante == selected_pollutant)
-    ]
+    data = filter_df(selected_appa_station, selected_pollutant)
     data_resampled = data.resample("W", on="Data").mean()
     data_resampled = data_resampled.reset_index()
     fig = px.line(data_resampled, x="Data", y="Valore")
@@ -53,18 +57,44 @@ def update_main_plot(selected_appa_station, selected_pollutant):
 @callback(
     Output("year-plot", "figure"),
     Input("selected-appa-station", "value"),
-    Input("selected-pollutant", "value"),
+    Input("selected-pollutant", "value")
 )
 def update_year_plot(selected_appa_station, selected_pollutant):
-    data = df[
-        (df.Stazione == selected_appa_station) & (df.Inquinante == selected_pollutant)
-    ]
+    data = filter_df(selected_appa_station, selected_pollutant)
+
     df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
     df_year.index.names = ["Year", "Month"]
     df_year = df_year.reset_index()
     fig = px.line(df_year, y="Valore", x="Month", color="Year")
 
     return fig
+
+
+@callback(
+    Output("week-plot", "figure"),
+    Input("selected-appa-station", "value"),
+    Input("selected-pollutant", "value")
+)
+def update_week_plot(selected_appa_station, selected_pollutant):
+    data = filter_df(selected_appa_station, selected_pollutant)
+
+    fig = px.bar(
+        data,
+        x="Data",
+        y="Valore",
+        color="Inverno"
+    )
+
+    return fig
+
+
+@callback(
+    Output("day-plot", "figure"),
+    Input("selected-appa-station", "value"),
+    Input("selected-pollutant", "value")
+)
+def update_day_plot(selected_appa_station, selected_pollutant):
+    pass
 
 
 title = html.Div("APPA Data", className="header-title")
@@ -86,16 +116,18 @@ layout = dbc.Container(
         gas_btns,
         dbc.Row(
             [
-                dbc.Col(dcc.Graph(id="main-plot"), lg=7, xl=8),  # className="main-plot-ct"
+                # className="main-plot-ct"
+                dbc.Col(dcc.Graph(id="main-plot"), lg=7, xl=8),
                 dbc.Col(
                     [
                         dcc.Graph(id="year-plot", className="side-plot"),
-                        dcc.Graph(id="weekly-plot", className="side-plot"),
+                        dcc.Graph(id="week-plot", className="side-plot"),
                     ],
                     # className="side-plots-ct",
                     lg=5, xl=4
                 ),
-            ]
+            ],
+            className="content"
         ),
     ],
     # fluid=True,
