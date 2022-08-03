@@ -1,21 +1,21 @@
 .content {
-    max-width: 80%;
-    position: relative;
-    margin-left: 10rem;
-    margin-top: 2rem;
-    margin-right: 4rem;
-    font-weight: 800;
-    font-size: 2rem;
-    padding-left: 2rem;
+  background-color: white;
+  max-width: 80%;
+  position: relative;
+  margin-left: 12rem;
+  margin-top: 2rem;
+  margin-right: 4rem;
+  font-weight: 800;
+  font-size: 2rem;
 }
 
 .main-plot-ct {
-    max-width: 65%;
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  max-width: 65%;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 
 .side-plots-ct {
-    display: flex;
-    flex-shrink: 3;
-    flex-direction: column;
+  display: flex;
+  flex-shrink: 3;
+  flex-direction: column;
 }
