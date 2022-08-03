@@ -2,7 +2,7 @@ body{
     background-color: #eff4f9;
 }
 
-.sidebar {
+/* .sidebar {
         position: fixed;
         top: 0;
         left: 0;
@@ -10,7 +10,7 @@ body{
         width: 10rem;
         padding: 2rem 1rem;
         background-color: #fff;
-}
+} */
 
 .sidebar-img-div {
     width: 100%;
