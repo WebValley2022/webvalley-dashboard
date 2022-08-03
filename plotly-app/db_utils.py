@@ -2,7 +2,7 @@ import pandas as pd
 import psycopg2
 from datetime import datetime
 
-def load_data_from_psql(query: str, columns: list[str] | None = None, **kwargs) -> pd.DataFrame:
+def load_data_from_psql(query: str, columns=None, **kwargs) -> pd.DataFrame:
     # todo: reuse connection maybe?
     with psycopg2.connect(
         database="webvalley2022", user='postgres',
