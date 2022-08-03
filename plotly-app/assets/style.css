@@ -1,5 +1,6 @@
-body{
-    background-color: #eff4f9;
+body {
+  background-color: #eff4f9;
+  padding-top: 1%;
 }
 
 /* .sidebar {
@@ -13,22 +14,22 @@ body{
 } */
 
 .sidebar-img-div {
-    width: 100%;
+  width: 100%;
 }
 
 .sidebar-img {
-    display: block;
-    width: 70%;
-    margin-left: auto;
-    margin-right: auto;
+  display: block;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .sidebar-link {
-    font-size: 13px;
-    font-weight: 600;
-    margin: 0.5rem 0;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0.5rem 0;
 }
 
 .btn {
-    border-radius: 10px;
+  border-radius: 10px;
 }

@@ -1,12 +1,5 @@
 .content {
-  background-color: white;
-  max-width: 80%;
-  position: relative;
-  margin-left: 12rem;
-  margin-top: 2rem;
-  margin-right: 4rem;
-  font-weight: 800;
-  font-size: 2rem;
+  height: 100%;
 }
 
 .main-plot-ct {

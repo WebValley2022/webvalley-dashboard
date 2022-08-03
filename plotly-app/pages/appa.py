@@ -109,7 +109,7 @@ def update_day_plot(selected_appa_station, selected_pollutant):
     df_year = data.groupby(data.Data.dt.hour).mean()
     data.index.names = ["Hour"]
     df_year = df_year.reset_index()
-    fig = px.line(df_year, y="Valore", x="Data")
+    fig = px.line(df_year, y="Valore", x="Data", layout="autosize")
 
     return fig
 
@@ -134,15 +134,16 @@ layout = dbc.Container(
         dbc.Row(
             [
                 # className="main-plot-ct"
-                dbc.Col(dcc.Graph(id="main-plot"), lg=7, xl=8),
+                dbc.Col(dcc.Graph(id="main-plot"), md=7, lg=7, xl=8),
                 dbc.Col(
                     [
-                        dcc.Graph(id="year-plot", className="side-plot"),
-                        dcc.Graph(id="week-plot", className="side-plot"),
-                        dcc.Graph(id="day-plot", className="side-plot")
+                        dcc.Graph(id="year-plot",
+                                  className="side-plot"),
+                        dbc.Row([dbc.Col(dcc.Graph(id="week-plot", className="side-plot")),
+                                dbc.Col(dcc.Graph(id="day-plot", className="side-plot"))])
                     ],
                     # className="side-plots-ct",
-                    lg=5, xl=4
+                    md=5, lg=5, xl=4
                 ),
             ],
             className="content"
