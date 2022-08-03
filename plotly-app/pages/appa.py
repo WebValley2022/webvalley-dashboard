@@ -21,6 +21,20 @@ def filter_df(df, station, pollutant):
     ]
 
 
+def line_plot(df, x, y, color=None):
+    # if color:
+    #     fig = px.line(df, x=x, y=y, color=color)
+    # else:
+    #     fig = px.line(df, x=x, y=y)
+
+    fig = px.line(df, x=x, y=y, color=color)
+
+    fig.update_layout(margin=dict(l=0, r=5, t=0, b=0), plot_bgcolor="white")
+    fig.update_yaxes(fixedrange=True)
+
+    return fig
+
+
 @callback(
     Output("appa-pollutants", "children"), Input("selected-appa-station", "value")
 )
@@ -52,9 +66,7 @@ def update_main_plot(selected_appa_station, selected_pollutant):
 
     data_resampled = data.resample("W", on="Data").mean()
     data_resampled = data_resampled.reset_index()
-    fig = px.line(data_resampled, x="Data", y="Valore")
-    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-    fig.update_yaxes(fixedrange=True)
+    fig = line_plot(data_resampled, "Data", "Valore")
     return fig
 
 
@@ -69,9 +81,7 @@ def update_year_plot(selected_appa_station, selected_pollutant):
     df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
     df_year.index.names = ["Year", "Month"]
     df_year = df_year.reset_index()
-    fig = px.line(df_year, y="Valore", x="Month", color="Year")
-    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-    fig.update_yaxes(fixedrange=True)
+    fig = line_plot(df_year, "Month", "Valore", "Year")
     return fig
 
 
@@ -110,12 +120,12 @@ def update_week_plot(selected_appa_station, selected_pollutant):
 def update_day_plot(selected_appa_station, selected_pollutant):
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
-    df_year = data.groupby(data.Data.dt.hour).mean()
-    data.index.names = ["Hour"]
-    df_year = df_year.reset_index()
-    fig = px.line(df_year, y="Valore", x="Data",)
-    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
-    fig.update_yaxes(fixedrange=True)
+    df_day = data.groupby(data.Data.dt.hour).mean()
+    df_day.index.names = ["Hour"]
+    df_day = df_day.reset_index()
+    print(df_day)
+    fig = line_plot(df_day, "Hour", "Valore")
+
     return fig
 
 
