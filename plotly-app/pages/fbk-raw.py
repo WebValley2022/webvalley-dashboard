@@ -136,6 +136,7 @@ def update_right_top_plot(selected_period, selected_station):
 
     return fig
 
+
 def update_right_top_plot(selected_period, selected_station):
     print(stations[0])
     print(selected_station)
@@ -146,7 +147,8 @@ def update_right_top_plot(selected_period, selected_station):
         dfFBK1 = pd.read_csv('FBK data/appa2_new.csv', encoding='windows-1252')
 
     dfFBK1 = dfFBK1.dropna()
-    dfFBK1=dfFBK1.drop(dfFBK1.columns[["Unamed: 0", "node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"]], axis=1)
+    dfFBK1 = dfFBK1.drop(dfFBK1.columns[[
+                         "Unamed: 0", "node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"]], axis=1)
     dfFBK1["signal_res"] = dfFBK1["signal_res"].astype(float)
     dfFBK1["heater_res"] = dfFBK1["heater_res"].astype(float)
     dfFBK1["volt"] = dfFBK1["volt"].astype(float)
@@ -155,37 +157,39 @@ def update_right_top_plot(selected_period, selected_station):
     dfFBK1["p"] = dfFBK1["p"].astype(float)
     dfFBK1["t"] = dfFBK1["t"].astype(float)
 
-    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description','ts'])
+    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description', 'ts'])
     dfFBK1['Data'] = pd.to_datetime(dfFBK1.ts.dt.date)
     dfFBK1['Ora'] = str(dfFBK1.ts.dt.time)
 
     print(dfFBK1)
-    
+
     global dfFBK1ResV
-    dfFBK1ResV = dfFBK1.drop(dfFBK1.columns[[5,6,7]], axis=1) #drop Temperature, humidity, pressure
+    # drop Temperature, humidity, pressure
+    dfFBK1ResV = dfFBK1.drop(dfFBK1.columns[[5, 6, 7]], axis=1)
     dfFBK1ResV = dfFBK1ResV.groupby(["Data", "sensing_,material"]).mean()
     dfFBK1ResV = dfFBK1ResV.reset_index()
 
     dfFBK1ResV["Data"] = pd.to_datetime(dfFBK1ResV["Data"])
-    dfFBK1ResV = dfFBK1ResV.drop(dfFBK1.columns[[2,3]], axis=1)
+    dfFBK1ResV = dfFBK1ResV.drop(dfFBK1.columns[[2, 3]], axis=1)
 
     fig = go.Figure()
     for SensingMaterial, group in dfFBK1ResV.groupby("sensing_,material"):
         fig.add_trace(go.Scatter(
-            x = dfFBK1ResV[
+            x=dfFBK1ResV[
                 dfFBK1ResV["sensing_,material"] == SensingMaterial
             ]["Data"],
-            y = dfFBK1ResV[
+            y=dfFBK1ResV[
                 dfFBK1ResV["sensing_,material"] == SensingMaterial
             ]["heater_V"],
             name=SensingMaterial)
         )
 
-    fig.update_layout(legend_title_text = "Sensing Material")
+    fig.update_layout(legend_title_text="Sensing Material")
     fig.update_yaxes(title_text="Value")
 
     return fig
-    
+
+
 @callback(Output("resistance_plot", "figure"),
           Output("right_top_plot", "figure"),
           Input("selected_period", "value"),

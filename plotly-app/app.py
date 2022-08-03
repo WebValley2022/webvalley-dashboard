@@ -49,7 +49,6 @@ sidebar = html.Div(
             pills=True,
         ),
     ],
-    className="sidebar",
 )
 
 app.layout = html.Div(
@@ -57,7 +56,7 @@ app.layout = html.Div(
         dcc.Location(id="url"),
         dbc.Row(
             [
-                dbc.Col(sidebar, lg=3, xl=2, md=3),
+                dbc.Col(sidebar, lg=3, xl=2, md=3, className="sidebar"),
                 dbc.Col(dash.page_container, lg=9, xl=10, md=9),
             ]
         ),

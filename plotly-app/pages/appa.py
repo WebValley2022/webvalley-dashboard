@@ -107,7 +107,7 @@ def update_week_plot(selected_appa_station, selected_pollutant):
         color="Inverno",
         barmode="group"
     )
-    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    fig.update_layout(margin=dict(l=0, r=0, t=5, b=0), plot_bgcolor="white")
     fig.update_yaxes(fixedrange=True)
     return fig
 
@@ -148,24 +148,30 @@ layout = html.Div(
         gas_btns,
         dbc.Row(
             [
-                # className="main-plot-ct"
                 dbc.Col(dcc.Graph(id="main-plot", config={
                     'displayModeBar': False,
                     'displaylogo': False,
-                },
+                }, style=dict(height="80vh")
                 ), lg=7, xl=8),
                 dbc.Col(
                     [
-                        dcc.Graph(id="year-plot"),
-                        dcc.Graph(id="week-plot", className="side-plot"),
-                        dcc.Graph(id="day-plot", className="side-plot")
+                        dcc.Graph(id="year-plot", config={
+                            'displayModeBar': False,
+                            'displaylogo': False,
+                        }, style=dict(height="40vh")),
+                        dcc.Graph(id="week-plot", className="side-plot", config={
+                            'displayModeBar': False,
+                            'displaylogo': False,
+                        }, style=dict(height="20vh")),
+                        dcc.Graph(id="day-plot", className="side-plot", config={
+                            'displayModeBar': False,
+                            'displaylogo': False,
+                        }, style=dict(height="20vh"))
                     ],
-                    # className="side-plots-ct",
                     md=5, lg=5, xl=4
                 ),
             ],
-            # className="content"
         ),
     ],
-    # fluid=True,
+    className="section"
 )
