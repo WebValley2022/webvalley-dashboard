@@ -1,14 +1,12 @@
-import dash
 from dash import html, dcc, Input, Output, callback
-import plotly.express as px
-import dash_bootstrap_components as dbc
-import pandas as pd
-import plotly.graph_objects as go
-from datetime import date
-import os
 from db_utils import load_data_from_psql
 from datetime import datetime
+
+import plotly.graph_objects as go
+import pandas as pd
 import logging
+import dash
+import os
 
 dash.register_page(__name__, redirect_from=["/"])
 global dfFBK1

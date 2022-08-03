@@ -1,8 +1,8 @@
-import dash
-from dash import Dash, callback, html, dcc, Input, Output
+from dash import Dash, html, dcc
+
 import dash_bootstrap_components as dbc
-import plotly.express as px
 import pandas as pd
+import dash
 
 pd.options.mode.chained_assignment = None  # default='warn'
 

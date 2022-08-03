@@ -1,13 +1,11 @@
-from statistics import mean
-from time import time
-import dash
 from dash import html, dcc, Input, Output, callback
-import dash_daq as daq
-import plotly.graph_objs as go
-import plotly.express as px
+
 import dash_bootstrap_components as dbc
+import plotly.graph_objs as go
+import dash_daq as daq
 import pandas as pd
 import numpy as np
+import dash
 
 dash.register_page(__name__)
 

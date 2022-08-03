@@ -1,6 +1,5 @@
 import pandas as pd
 import psycopg2
-from datetime import datetime
 
 def load_data_from_psql(query: str, columns=None, **kwargs) -> pd.DataFrame:
     # todo: reuse connection maybe?
