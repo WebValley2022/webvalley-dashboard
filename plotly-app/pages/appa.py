@@ -8,8 +8,8 @@ dash.register_page(__name__)
 
 
 df = pd.read_csv(
-    "./data/21_22_APPA.csv")
-df = df[df.Valore != 'n.d.']
+    "../data/21_22_APPA.csv")
+df = df[df.Valore != "n.d."]
 df.Data = pd.to_datetime(df.Data)
 stations = df.Stazione.unique()
 
@@ -48,7 +48,8 @@ def get_pollutants(selected_appa_station):
     Input("selected-pollutant", "value")
 )
 def update_main_plot(selected_appa_station, selected_pollutant):
-    data = filter_df(selected_appa_station, selected_pollutant)
+    data = filter_df(df, selected_appa_station, selected_pollutant)
+
     data_resampled = data.resample("W", on="Data").mean()
     data_resampled = data_resampled.reset_index()
     fig = px.line(data_resampled, x="Data", y="Valore")
@@ -61,7 +62,7 @@ def update_main_plot(selected_appa_station, selected_pollutant):
     Input("selected-pollutant", "value")
 )
 def update_year_plot(selected_appa_station, selected_pollutant):
-    data = filter_df(selected_appa_station, selected_pollutant)
+    data = filter_df(df, selected_appa_station, selected_pollutant)
 
     df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
     df_year.index.names = ["Year", "Month"]
@@ -77,13 +78,21 @@ def update_year_plot(selected_appa_station, selected_pollutant):
     Input("selected-pollutant", "value")
 )
 def update_week_plot(selected_appa_station, selected_pollutant):
-    data = filter_df(selected_appa_station, selected_pollutant)
+    data = filter_df(df, selected_appa_station, selected_pollutant)
+    data["Month"] = data.Data.dt.month
+
+    data["Inverno"] = False
+    data.loc[(data.Month >= 10) | (data.Month <= 3), "Inverno"] = True
+    data = data.groupby(["Inverno", data.Data.dt.day_of_week]).mean()
+    data.index.names = ["Inverno", "Week day"]
+    data = data.reset_index()
 
     fig = px.bar(
         data,
-        x="Data",
+        x="Week day",
         y="Valore",
-        color="Inverno"
+        color="Inverno",
+        barmode="group"
     )
 
     return fig
@@ -95,7 +104,14 @@ def update_week_plot(selected_appa_station, selected_pollutant):
     Input("selected-pollutant", "value")
 )
 def update_day_plot(selected_appa_station, selected_pollutant):
-    pass
+    data = filter_df(df, selected_appa_station, selected_pollutant)
+
+    df_year = data.groupby(data.Data.dt.hour).mean()
+    data.index.names = ["Hour"]
+    df_year = df_year.reset_index()
+    fig = px.line(df_year, y="Valore", x="Data")
+
+    return fig
 
 
 title = html.Div("APPA Data", className="header-title")
@@ -123,6 +139,7 @@ layout = dbc.Container(
                     [
                         dcc.Graph(id="year-plot", className="side-plot"),
                         dcc.Graph(id="week-plot", className="side-plot"),
+                        dcc.Graph(id="day-plot", className="side-plot")
                     ],
                     # className="side-plots-ct",
                     lg=5, xl=4
