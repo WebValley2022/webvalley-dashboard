@@ -4,3 +4,7 @@ dash_daq
 pandas
 matplotlib
 seaborn
+dash_daq
+soupsieve
+bs4
+sklearn
