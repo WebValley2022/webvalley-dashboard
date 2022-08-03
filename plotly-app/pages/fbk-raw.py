@@ -14,7 +14,8 @@ dash.register_page(__name__, redirect_from=["/"])
 global dfFBK1
 
 if os.getenv("DEBUG"):
-    dfFBK1 = pd.read_csv('FBK data/appa1_new.csv', encoding='windows-1252')
+    dfFBK1 = pd.read_csv('../FBK data/data_fbk_from_db.csv',
+                         encoding='windows-1252')
 else:
     query = """
     select

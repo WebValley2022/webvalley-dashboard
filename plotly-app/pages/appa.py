@@ -139,9 +139,9 @@ layout = html.Div(
         dbc.Row(
             [
                 # className="main-plot-ct"
-                dbc.Col(dcc.Graph(id="main-plot",config={
+                dbc.Col(dcc.Graph(id="main-plot", config={
                     'displayModeBar': False,
-                    'displaylogo': False,                                       
+                    'displaylogo': False,
                 },
                 ), lg=7, xl=8),
                 dbc.Col(
