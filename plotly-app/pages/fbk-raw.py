@@ -136,7 +136,6 @@ def update_right_top_plot(selected_period, selected_station):
 
     return fig
 
-<<<<<<< HEAD
 def update_right_top_plot(selected_period, selected_station):
     print(stations[0])
     print(selected_station)
@@ -187,9 +186,6 @@ def update_right_top_plot(selected_period, selected_station):
 
     return fig
     
-=======
-
->>>>>>> 3c37cc42a694c4b1ff6d2853c631bb38d4265f20
 @callback(Output("resistance_plot", "figure"),
           Output("right_top_plot", "figure"),
           Input("selected_period", "value"),
