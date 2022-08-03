@@ -55,8 +55,8 @@ app.layout = dbc.Container(
         dcc.Location(id="url"),
         dbc.Row(
             [
-                dbc.Col(sidebar, lg=3, xl=2),  # className="main-plot-ct"
-                dbc.Col(dash.page_container, lg=9, xl=10),
+                dbc.Col(sidebar, lg=3, xl=2, md=3),
+                dbc.Col(dash.page_container, lg=9, xl=10, md=9),
             ]
         ),
     ]
