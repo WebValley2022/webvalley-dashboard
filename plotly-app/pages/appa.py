@@ -45,11 +45,6 @@ def filter_df(df, station, pollutant):
 
 
 def line_plot(df, x, y, color=None):
-    # if color:
-    #     fig = px.line(df, x=x, y=y, color=color)
-    # else:
-    #     fig = px.line(df, x=x, y=y)
-
     fig = px.line(df, x=x, y=y, color=color)
 
     fig.update_layout(margin=dict(l=0, r=5, t=0, b=0), plot_bgcolor="white")
