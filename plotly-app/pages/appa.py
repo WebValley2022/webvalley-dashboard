@@ -53,6 +53,8 @@ def update_main_plot(selected_appa_station, selected_pollutant):
     data_resampled = data.resample("W", on="Data").mean()
     data_resampled = data_resampled.reset_index()
     fig = px.line(data_resampled, x="Data", y="Valore")
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    fig.update_yaxes(fixedrange=True)
     return fig
 
 
@@ -68,7 +70,8 @@ def update_year_plot(selected_appa_station, selected_pollutant):
     df_year.index.names = ["Year", "Month"]
     df_year = df_year.reset_index()
     fig = px.line(df_year, y="Valore", x="Month", color="Year")
-
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    fig.update_yaxes(fixedrange=True)
     return fig
 
 
@@ -94,7 +97,8 @@ def update_week_plot(selected_appa_station, selected_pollutant):
         color="Inverno",
         barmode="group"
     )
-
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    fig.update_yaxes(fixedrange=True)
     return fig
 
 
@@ -109,8 +113,9 @@ def update_day_plot(selected_appa_station, selected_pollutant):
     df_year = data.groupby(data.Data.dt.hour).mean()
     data.index.names = ["Hour"]
     df_year = df_year.reset_index()
-    fig = px.line(df_year, y="Valore", x="Data", layout="autosize")
-
+    fig = px.line(df_year, y="Valore", x="Data",)
+    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    fig.update_yaxes(fixedrange=True)
     return fig
 
 
@@ -125,7 +130,7 @@ download_btn = dbc.Button(
 )
 gas_btns = html.Div(id="appa-pollutants", className="radio-group")
 
-layout = dbc.Container(
+layout = html.Div(
     [
         title,
         dropdown,
@@ -134,19 +139,22 @@ layout = dbc.Container(
         dbc.Row(
             [
                 # className="main-plot-ct"
-                dbc.Col(dcc.Graph(id="main-plot"), md=7, lg=7, xl=8),
+                dbc.Col(dcc.Graph(id="main-plot",config={
+                    'displayModeBar': False,
+                    'displaylogo': False,                                       
+                },
+                ), lg=7, xl=8),
                 dbc.Col(
                     [
-                        dcc.Graph(id="year-plot",
-                                  className="side-plot"),
-                        dbc.Row([dbc.Col(dcc.Graph(id="week-plot", className="side-plot")),
-                                dbc.Col(dcc.Graph(id="day-plot", className="side-plot"))])
+                        dcc.Graph(id="year-plot"),
+                        dcc.Graph(id="week-plot", className="side-plot"),
+                        dcc.Graph(id="day-plot", className="side-plot")
                     ],
                     # className="side-plots-ct",
                     md=5, lg=5, xl=4
                 ),
             ],
-            className="content"
+            # className="content"
         ),
     ],
     # fluid=True,

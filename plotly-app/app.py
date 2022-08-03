@@ -4,6 +4,8 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 
+pd.options.mode.chained_assignment = None  # default='warn'
+
 app = Dash(
     __name__,
     use_pages=True,
@@ -50,7 +52,7 @@ sidebar = html.Div(
     className="sidebar",
 )
 
-app.layout = dbc.Container(
+app.layout = html.Div(
     [
         dcc.Location(id="url"),
         dbc.Row(

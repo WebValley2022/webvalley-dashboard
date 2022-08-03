@@ -3,15 +3,9 @@ body {
   padding-top: 1%;
 }
 
-/* .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 10rem;
-        padding: 2rem 1rem;
-        background-color: #fff;
-} */
+.sidebar {
+    background-color: #fff;
+}
 
 .sidebar-img-div {
   width: 100%;
