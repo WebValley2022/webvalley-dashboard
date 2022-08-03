@@ -7,8 +7,9 @@ import pandas as pd
 dash.register_page(__name__)
 
 
-df = pd.read_csv("../data/21_22_APPA.csv")
-df = df[df.Valore != "n.d."]
+df = pd.read_csv(
+    "./data/21_22_APPA.csv")
+df = df[df.Valore != 'n.d.']
 df.Data = pd.to_datetime(df.Data)
 stations = df.Stazione.unique()
 
