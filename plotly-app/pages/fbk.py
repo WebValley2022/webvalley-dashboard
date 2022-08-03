@@ -10,11 +10,11 @@ dash.register_page(__name__)
 
 title = html.Div("FBK Fitted Data", className="header-title")
 
-appa_df = pd.read_csv("../data/21_22_APPA.csv")
+appa_df = pd.read_csv("./data/21_22_APPA.csv")
 appa_df = appa_df[appa_df.Valore != 'n.d.']
 appa_df.Data = pd.to_datetime(appa_df.Data)
 
-fbk_df = pd.read_csv("../data/19_20_APPA.csv")
+fbk_df = pd.read_csv("./data/19_20_APPA.csv")
 fbk_df = appa_df[appa_df.Valore != 'n.d.']
 fbk_df.Data = pd.to_datetime(appa_df.Data)
 fbk_stations = fbk_df.Stazione.unique()

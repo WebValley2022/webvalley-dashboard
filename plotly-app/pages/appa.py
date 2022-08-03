@@ -10,7 +10,7 @@ dash.register_page(__name__)
 title = html.Div("APPA Data", className="header-title")
 
 df = pd.read_csv(
-    "/home/davidef/Documents/webvalley-dashboard/plotly-app/data/21_22_APPA.csv")
+    "./data/21_22_APPA.csv")
 df = df[df.Valore != 'n.d.']
 df.Data = pd.to_datetime(df.Data)
 stations = df.Stazione.unique()
