@@ -3,16 +3,39 @@ from dash import html, dcc, Input, Output, callback
 import plotly.express as px
 import dash_bootstrap_components as dbc
 import pandas as pd
+import os
+from db_utils import load_data_from_psql
+from datetime import datetime
+import logging
 
 dash.register_page(__name__)
 
+if os.getenv("DEBUG"):
+    df = pd.read_csv("./data/21_22_APPA.csv")
+else:
+    query = """
+    select
+        stazione,
+        inquinante,
+        ts,
+        valore
+    from appa_data
+    where ts > '2020-01-01';
+    """
+    start = datetime.now()
+    df = load_data_from_psql(query)
+    logging.info("Query time", datetime.now() - start)
+    # df.to_csv("data_appa_from_db.csv")
+    df = df.rename({
+        "stazione": "Stazione",
+        "inquinante": "Inquinante",
+        "ts": "Data",
+        "valore": "Valore",
+    }, axis=1)
 
-df = pd.read_csv(
-    "./data/21_22_APPA.csv")
 df = df[df.Valore != "n.d."]
 df.Data = pd.to_datetime(df.Data)
 stations = df.Stazione.unique()
-
 
 def filter_df(df, station, pollutant):
     return df[
