@@ -17,7 +17,7 @@ df.Time = pd.to_datetime(df.Time)
 df["Station"] = "Parco S. Chiara"
 
 df["NO2_pred"] += np.random.rand(len(df)) * 10 - 5
-df["CO_pred"] += np.random.rand(len(df)) * 10 - 5
+df["CO_pred"] += np.random.rand(len(df)) - 0.5
 df["O3_pred"] += np.random.rand(len(df)) * 10 - 5
 
 
