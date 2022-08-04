@@ -155,9 +155,9 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
 
     # make month average of data
     df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
-    df_year.index.names = ["Year", "Month"]
+    df_year.index.names = ["Anno", "Mese"]
     df_year = df_year.reset_index()
-    fig = line_plot(df_year, "Month", "Valore", "Year")
+    fig = line_plot(df_year, "Mese", "Valore", "Anno")
     return fig
 
 @callback(
@@ -187,13 +187,13 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
 
     # make daily average of pollutant level
     data = data.groupby(["Inverno", data.Data.dt.day_of_week]).mean()
-    data.index.names = ["Inverno", "Week day"]
+    data.index.names = ["Inverno", "Giorno della settimana"]
     data = data.reset_index()
 
     # draw main bar plot
     fig = px.bar(
         data,
-        x       = "Week day",
+        x       = "Giorno della settimana",
         y       = "Valore",
         color   = "Inverno",
         barmode = "group"
@@ -222,14 +222,14 @@ def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.F
 
     # make hourly average of data
     df_day = data.groupby(data.Data.dt.hour).mean()
-    df_day.index.names = ["Hour"]
+    df_day.index.names = ["Ora"]
     df_day = df_day.reset_index()
-    
-    fig = line_plot(df_day, "Hour", "Valore")
+    fig = line_plot(df_day, "Ora", "Valore")
 
     return fig
 
-title = html.Div("APPA Data", className="header-title")
+
+title = html.Div("Dati APPA", className="header-title")
 dropdown = dcc.Dropdown(
     stations,
     id = "selected-appa-station",
@@ -246,12 +246,12 @@ gas_btns = html.Div(
     className = "radio-group"
 )
 
+header = html.Div([title, dropdown, download_btn, gas_btns],
+                  className="section-header")
+
 layout = html.Div(
     [
-        title,
-        dropdown,
-        download_btn,
-        gas_btns,
+        header,
         dbc.Row([
             dbc.Col(
                 dcc.Graph(
@@ -260,7 +260,7 @@ layout = html.Div(
                         'displayModeBar': False,
                         'displaylogo': False,
                     },
-                    style = dict(height="80vh")
+                    style = dict(height = "70vh")
                 ),
                 lg = 7,
                 xl = 8
@@ -273,7 +273,7 @@ layout = html.Div(
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style = dict(height="40vh")
+                        style = dict(height = "30vh")
                     ),
                     dcc.Graph(
                         id = "week-plot",
@@ -282,7 +282,7 @@ layout = html.Div(
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style = dict(height="20vh")
+                        style = dict(height = "20vh")
                     ),
                     dcc.Graph(
                         id = "day-plot",
@@ -291,7 +291,7 @@ layout = html.Div(
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style = dict(height="20vh")
+                        style = dict(height = "20vh")
                     )
                 ],
                 md = 5,

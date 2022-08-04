@@ -2,9 +2,9 @@ import pandas as pd
 import os
 
 # paths relative to THIS script
-FBK_FILE_PATH        = "./data_fbk_from_db.csv"
-APPA_FILE_PATH       = "./merged_APPA_data.csv"
-PREDICTION_FILE_PATH = "./appa1_predictions.csv"
+FBK_FILE_PATH        = "../../../FBK data/data_fbk_from_db.csv"
+APPA_FILE_PATH       = "../../data/21_22_APPA.csv"
+PREDICTION_FILE_PATH = "../../data/appa1_predictions.csv"
 
 def get_fbk_data() -> pd.DataFrame:
     """

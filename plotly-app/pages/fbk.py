@@ -10,7 +10,6 @@ import dash
 
 dash.register_page(__name__)
 
-title = html.Div("FBK Fitted Data", className="header-title")
 
 df = utils.get_prediction_data()
 df["Time"] = pd.to_datetime(df["Time"])
@@ -20,17 +19,20 @@ df["Station"] = "Parco S. Chiara"
 
 # add random noise to dataframe
 df["NO2_pred"] += np.random.rand(len(df)) * 10 - 5
-df["CO_pred"] += np.random.rand(len(df)) * 10 - 5
+df["CO_pred"] += np.random.rand(len(df)) - 0.5
 df["O3_pred"] += np.random.rand(len(df)) * 10 - 5
 
-fbk_stations = ["Parco S. Chiara", "Via Bolzano"]
-pollutants = {
-    "Biossido di Azoto": "NO2",
-    "Ozono": "O3",
-    "Ossido di Carbonio": "CO"
-}
 
-# build dropdown stations
+fbk_stations = ["Parco S. Chiara", "Via Bolzano"]
+pollutants = [
+    dict(label="Biossido di Azoto", value="NO2"),
+    dict(label="Ozono", value="O3"),
+    dict(label="Ossido di Carbonio", value="CO")
+]
+
+title = html.Div("Dati FBK - Fitted", className="header-title")
+
+# build dropdown of stations
 dropdown = dcc.Dropdown(
     fbk_stations,
     id = "selected-station",
@@ -63,27 +65,39 @@ header = html.Div(
 
 graph_selectors = html.Div(
     [
-        dcc.Dropdown(
-            id = "selected-period",
-            options = [
-                "day", "week", "month", "year", "all"],
-            className = "dropdown"
+        html.Div(
+            [
+                "Visualizza: ",
+                dcc.Dropdown(
+                    id = "selected-period",
+                    options = [
+                        "ultime 24h",
+                        "ultima settimana",
+                        "ultimo mese",
+                        "ultimo anno",
+                        "tutto"
+                    ],
+                    className = "dropdown"
+                )
+            ],
+            className = "graph-dropdown"
         ),
         daq.ToggleSwitch(
             id = "toggle-comparison",
             label = "Compare with APPA",
             color = "#0d6efd",
-            className = "ml-auto"
+            className = "ml-auto toggle"
         )
     ],
     className = "d-flex flex-grow justify-content-between"
 )
 
 comparison_graph = html.Div(
-    [dcc.Graph(id="comparison-graph"), graph_selectors]
-)
+    [dcc.Graph(id="comparison-graph", style=dict(height="50vh"), config={
+        'displayModeBar': False,
+        'displaylogo': False,
+    }), graph_selectors])
 
-content = html.Div([comparison_graph], className="content")
 
 # TODO: Fix labels.
 
@@ -151,6 +165,9 @@ def update_comparison_graph(
             )
         )
 
+    fig.update_layout(margin=dict(l=5, r=5, t=0, b=0), plot_bgcolor="white")
+    fig.update_yaxes(fixedrange=True)
+
     return fig
 
 
@@ -185,19 +202,19 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     # get the last date available
     last_day = mean_temp.Time.max()
 
-    if selected_period == "day":
+    if selected_period == "ultime 24h":
         time_span = "H"
-        mean_temp = mean_temp[mean_temp.Time == last_day]
-    elif selected_period == "week":
+        mean_temp = mean_temp.tail(24)
+    elif selected_period == "ultima settimana":
         time_span = "H"
-        mean_temp = mean_temp[mean_temp.Time.dt.week == last_day.week]
-    elif selected_period == "month":
+        mean_temp = mean_temp.tail(168)
+    elif selected_period == "ultimo mese":
         time_span = "D"
         mean_temp = mean_temp[
             (mean_temp.Time.dt.month == last_day.month) &
             (mean_temp.Time.dt.year == last_day.year)
         ]
-    elif selected_period == "year":
+    elif selected_period == "ultimo anno":
         time_span = "W"
         mean_temp = mean_temp[(mean_temp.Time.dt.year == last_day.year)]
     else:
@@ -216,6 +233,9 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     return mean_temp
 
 layout = html.Div(
-    [header, content],
+    [
+        header,
+        html.Div([comparison_graph], className = "fbk-main-plot")
+    ],
     className = "section"
 )

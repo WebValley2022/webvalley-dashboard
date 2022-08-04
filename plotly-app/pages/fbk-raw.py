@@ -19,7 +19,7 @@ import os
 dash.register_page(__name__)
 
 if os.getenv("DEBUG"):
-    pass
+    fbk_data = utils.get_fbk_data()
 else:
     query = """
     select
@@ -52,7 +52,7 @@ else:
     logging.info("Query time", datetime.now() - start)
     df.to_csv("data_fbk_from_db.csv")
 
-title = html.Div("FBK Raw Data", className="header-title")
+title = html.Div("Dati FBK - Raw", className="header-title")
 
 periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
 stations = ["Trento - S. Chiara", "Trento - Via Bolzano"]
@@ -108,12 +108,12 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     plot_width = 800
     plot_height = 400
 
-    fbk_data = utils.get_fbk_data()
+    fbk_data_THP = fbk_data
 
     # all the same station so remove only duplicates of readings
-    fbk_data.drop_duplicates(["sensor_description", "ts"], inplace = True)
+    fbk_data_THP.drop_duplicates(["sensor_description", "ts"], inplace = True)
     # keep only Temperature, Humidity, Pressure
-    fbk_data_THP = fbk_data.drop(["heater_res", "signal_res", "volt"], axis = 1)
+    fbk_data_THP = fbk_data_THP.drop(["heater_res", "signal_res", "volt"], axis = 1)
 
     # make average of all data within a minute of difference
     fbk_data_THP = fbk_data_THP.groupby(
@@ -190,14 +190,14 @@ def update_bottom_right_plot(selected_station: str, selected_period: str) -> Tup
     Returns:
         Tuple[go.Figure, go.Figure]: the two plots
     """
-    fbk_data = utils.get_fbk_data()
-    
+    fbk_data_SRV = fbk_data
+
     # separate date from time
-    fbk_data["Data"] = pd.to_datetime(fbk_data.ts.dt.date)
+    fbk_data_SRV["Data"] = pd.to_datetime(fbk_data.ts.dt.date)
 
     # keep only Signal Resistance, drop Temperature, humidity, pressure
     # SRV = Signal Resistance and Volt
-    fbk_data_SRV = fbk_data.drop(["p", "rh", "t"], axis=1)
+    fbk_data_SRV = fbk_data_SRV.drop(["p", "rh", "t"], axis=1)
     fbk_data_SRV = fbk_data_SRV.groupby(["Data", "sensor_description"]).mean()
     fbk_data_SRV.reset_index(inplace = True)
 
