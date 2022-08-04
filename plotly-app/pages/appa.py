@@ -30,15 +30,15 @@ else:
     df = df.rename({
         "stazione": "Stazione",
         "inquinante": "Inquinante",
-        "ts": "Data",
-        "valore": "Valore",
+        "ts": "Date",
+        "valore": "Value",
     }, axis=1)
 
 # keep only rows with a value that's not NA
-df = df[df.Valore != "n.d."]
+df = df[df.Value != "n.d."]
 
-df["Data"] = pd.to_datetime(df["Data"])
-stations = df.Stazione.unique()
+df["Date"] = pd.to_datetime(df["Date"])
+stations = df.Station.unique()
 
 
 def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
@@ -54,12 +54,12 @@ def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
         pd.DataFrame: the filtered dataframe
     """
     return df[
-        (df.Stazione == station) &
-        (df.Inquinante == pollutant)
+        (df.Station == station) &
+        (df.Pollutant == pollutant)
     ]
 
 
-def line_plot(df: pd.DataFrame, x: str, y: str, color: str = None) -> go.Figure:
+def line_plot(df: pd.DataFrame, x: str, y: str, title: str, title_size: int = 14, color: str = None) -> go.Figure:
     """
     Generates a line plot based on the dataframe, x and y given
 
@@ -72,10 +72,24 @@ def line_plot(df: pd.DataFrame, x: str, y: str, color: str = None) -> go.Figure:
     Returns:
         go.Figure: the line plot
     """
-    fig = px.line(df, x=x, y=y, color=color)
+    fig = px.line(df,
+                  x=x,
+                  y=y,
+                  color=color)
 
-    fig.update_layout(margin=dict(l=0, r=5, t=0, b=0), plot_bgcolor="white")
-    fig.update_yaxes(fixedrange=True)
+    fig.update_layout(margin=dict(l=0, r=5, t=30, b=0),
+                      plot_bgcolor="white",
+                      title=dict(text=title,
+                                 x=0.5,
+                                 xanchor="center",
+                                 yanchor="top",
+                                 font_family="Sans serif",
+                                 font_size=title_size))
+    fig.update_yaxes(showline=True, linewidth=1,
+                     linecolor="#003E9A", fixedrange=True,
+                     title_font_size=12)
+    fig.update_xaxes(showline=True, linewidth=1,
+                     linecolor="#003E9A", title_font_size=12)
 
     return fig
 
@@ -95,10 +109,10 @@ def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
         dbc.RadioItems: the radio items of the pollutants
     """
     # filter station
-    filtered_df = df[df.Stazione == selected_appa_station]
+    filtered_df = df[df.Station == selected_appa_station]
 
     # get pollutants and build dict from it
-    pollutants = filtered_df.Inquinante.unique()
+    pollutants = filtered_df.Pollutant.unique()
     pollutants_list = [
         {"label": pollutant, "value": pollutant} for pollutant in pollutants
     ]
@@ -110,7 +124,6 @@ def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
         label_class_name="btn btn-outline-primary",
         label_checked_class_name="active",
         options=pollutants_list,
-        # value = pollutants_list[0]["value"],
         value="Biossido di Azoto"
     )
 
@@ -134,9 +147,10 @@ def update_main_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     # make week average of data
-    data_resampled = data.resample("W", on="Data").mean()
+    data_resampled = data.resample("W", on="Date").mean()
     data_resampled = data_resampled.reset_index()
-    fig = line_plot(data_resampled, "Data", "Valore")
+    fig = line_plot(data_resampled, "Date", "Value",
+                    title="Weekly mean over time", title_size=18)
     return fig
 
 
@@ -159,10 +173,11 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     # make month average of data
-    df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
+    df_year = data.groupby([data.Date.dt.year, data.Date.dt.month]).mean()
     df_year.index.names = ["Anno", "Mese"]
     df_year = df_year.reset_index()
-    fig = line_plot(df_year, "Mese", "Valore", "Anno")
+    fig = line_plot(df_year, "Mese", "Value", color="Anno",
+                    title="Year comparison")
     return fig
 
 
@@ -183,36 +198,53 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
         go.Figure: the plot
     """
     data = filter_df(df, selected_appa_station, selected_pollutant)
-    data["Month"] = data.Data.dt.month
+    data["Month"] = data.Date.dt.month
 
     # add new column
-    data["Inverno"] = False
+    data["Season"] = "Summer"
 
     # set January to March and October to December as 'Inverno' True
-    data.loc[(data.Month >= 10) | (data.Month <= 3), "Inverno"] = True
+    data.loc[(data.Month >= 10) | (data.Month <= 3), "Season"] = "Winter"
 
     # make daily average of pollutant level
-    data = data.groupby(["Inverno", data.Data.dt.day_of_week]).mean()
-    data.index.names = ["Inverno", "Giorno della settimana"]
+    data = data.groupby(["Season", data.Date.dt.day_of_week]).mean()
+    data.index.names = ["Season", "Weekday"]
     data = data.reset_index()
 
     # draw main bar plot
     fig = px.bar(
         data,
-        x="Giorno della settimana",
-        y="Valore",
-        color="Inverno",
+        x="Weekday",
+        y="Value",
+        color="Season",
         barmode="group"
     )
-    fig.update_layout(margin=dict(l=0, r=0, t=5, b=0), plot_bgcolor="white")
-    fig.update_yaxes(fixedrange=True)
+    fig.update_layout(margin=dict(l=0, r=0, t=18, b=0),
+                      plot_bgcolor="white",
+                      title=dict(text="Weekday avg",
+                                 x=0.5,
+                                 y=0.95,
+                                 xanchor="center",
+                                 yanchor="top",
+                                 font_family="Sans serif",
+                                 font_size=14),
+                      legend_title_text="")
+    fig.update_yaxes(showline=True, linewidth=1,
+                     linecolor="#003E9A", fixedrange=True,
+                     title_font_family="Sans serif", title_font_size=12)
+    fig.update_xaxes(showline=True, linewidth=1,
+                     linecolor="#003E9A", title_font_family="Sans serif",
+                     title_font_size=12)
+
     return fig
 
 
-@callback(
+@ callback(
     Output("day-plot", "figure"),
     Input("selected-appa-station", "value"),
     Input("selected-pollutant", "value")
+
+
 )
 def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.Figure:
     """
@@ -228,10 +260,10 @@ def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.F
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     # make hourly average of data
-    df_day = data.groupby(data.Data.dt.hour).mean()
+    df_day = data.groupby(data.Date.dt.hour).mean()
     df_day.index.names = ["Ora"]
     df_day = df_day.reset_index()
-    fig = line_plot(df_day, "Ora", "Valore")
+    fig = line_plot(df_day, "Ora", "Value", title="Hourly avg")
 
     return fig
 
@@ -252,7 +284,7 @@ download_btn = dbc.Button(
 download_it = dcc.Download(id="download-text")
 
 
-@callback(
+@ callback(
     Output("download-text", "data"),
     Input("btn_appa", "n_clicks"),
     prevent_initial_call=True,
@@ -296,7 +328,7 @@ layout = html.Div(
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style=dict(height="30vh")
+                        style=dict(height="30vh"),
                     ),
                     dcc.Graph(
                         id="week-plot",
