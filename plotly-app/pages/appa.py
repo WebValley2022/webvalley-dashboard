@@ -246,8 +246,10 @@ gas_btns = html.Div(
     className = "radio-group"
 )
 
-header = html.Div([title, dropdown, download_btn, gas_btns],
-                  className="section-header")
+header = html.Div(
+    [title, dropdown, download_btn, gas_btns],
+    className = "section-header"
+)
 
 layout = html.Div(
     [
