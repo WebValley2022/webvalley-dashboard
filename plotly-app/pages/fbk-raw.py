@@ -102,7 +102,10 @@ header = html.Div(
 )
 def update_resistance_plot(selected_period, selected_station):
     # filter only valid values
-    fbk_data_ResV = fbk_data[fbk_data["signal_res"] != pd.NA]
+    fbk_data_ResV = fbk_data[
+        (fbk_data["node_description"] == selected_station) &
+        (fbk_data["signal_res"] != pd.NA)
+    ]
 
     # convert date to datetime
     fbk_data_ResV['Data'] = pd.to_datetime(fbk_data_ResV.ts.dt.date)
@@ -171,7 +174,9 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     plot_width = 800
     plot_height = 400
 
-    dfFBK1 = fbk_data.dropna(inplace=False)
+    dfFBK1 = fbk_data[
+        fbk_data["node_description"] == selected_station
+    ].dropna(inplace=False)
 
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
@@ -262,7 +267,9 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
         go.Figure: the plot
     """
 
-    dfFBK1 = fbk_data
+    dfFBK1 = fbk_data[
+        fbk_data["node_description"] == selected_station
+    ]
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["volt"] != pd.NA]
@@ -322,7 +329,9 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     Input("selected-station", "value"),
 )
 def update_top_right_plot(selected_period: str, selected_station: str) -> go.Figure:
-    dfFBK1 = fbk_data
+    dfFBK1 = fbk_data[
+        fbk_data["node_description"] == selected_station
+    ]
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["heater_res"] != pd.NA]
