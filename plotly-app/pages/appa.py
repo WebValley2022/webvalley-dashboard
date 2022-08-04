@@ -22,8 +22,7 @@ else:
         inquinante,
         ts,
         valore
-    from appa_data
-    where ts > '2020-01-01';
+    from appa_data;
     """
     start = datetime.now()
     df = load_data_from_psql(query)
@@ -247,15 +246,29 @@ dropdown = dcc.Dropdown(
 download_btn = dbc.Button(
     [html.I(className="fa-solid fa-download"), "Download full data"],
     color="primary",
+    id="btn_appa",
     class_name="download-btn",
 )
+download_it = dcc.Download(id="download-text")
+
+
+@callback(
+    Output("download-text", "data"),
+    Input("btn_appa", "n_clicks"),
+    prevent_initial_call=True,
+)
+def create_download_file(n_clicks):
+    global df
+    return dcc.send_data_frame(df.to_csv, "appa_data.csv")
+
+
 gas_btns = html.Div(
     id="appa-pollutants",
     className="radio-group"
 )
 
 header = html.Div(
-    [title, dropdown, download_btn, gas_btns],
+    [title, dropdown, download_btn, download_it, gas_btns],
     className="section-header"
 )
 

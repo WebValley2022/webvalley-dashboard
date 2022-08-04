@@ -49,7 +49,7 @@ else:
     start = datetime.now()
     df = load_data_from_psql(query)
     logging.info("Query time", datetime.now() - start)
-    df.to_csv("data_fbk_from_db.csv")
+    # df.to_csv("data_fbk_from_db.csv")
 
 title = html.Div("Dati FBK - Raw", className="header-title")
 
