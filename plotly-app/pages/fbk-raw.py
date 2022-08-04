@@ -103,7 +103,7 @@ header = html.Div(
 def update_resistance_plot(selected_period, selected_station):
     # filter only valid values
     fbk_data_ResV = fbk_data[
-        (fbk_data["node_description"] == selected_station) &
+        (fbk_data["node_description"] == selected_station.split(" - ")[-1]) &
         (fbk_data["signal_res"] != pd.NA)
     ]
 
@@ -175,7 +175,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     plot_height = 400
 
     dfFBK1 = fbk_data[
-        fbk_data["node_description"] == selected_station
+        fbk_data["node_description"] == selected_station.split(" - ")[-1]
     ].dropna(inplace=False)
 
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
@@ -268,7 +268,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     """
 
     dfFBK1 = fbk_data[
-        fbk_data["node_description"] == selected_station
+        fbk_data["node_description"] == selected_station.split(" - ")[-1]
     ]
 
     # select only valid values
@@ -330,7 +330,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
 )
 def update_top_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     dfFBK1 = fbk_data[
-        fbk_data["node_description"] == selected_station
+        fbk_data["node_description"] == selected_station.split(" - ")[-1]
     ]
 
     # select only valid values
