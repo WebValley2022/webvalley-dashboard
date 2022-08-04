@@ -477,4 +477,6 @@ layout = html.Div([
             ),
         ],
     ),
-])
+],
+className="section"
+)

@@ -292,7 +292,7 @@ download_btn = dbc.Button(
 download_it = dcc.Download(id="download-text")
 
 
-@ callback(
+@callback(
     Output("download-text", "data"),
     Input("btn_appa", "n_clicks"),
     prevent_initial_call=True,
