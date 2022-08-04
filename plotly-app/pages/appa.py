@@ -38,6 +38,12 @@ else:
 df = df[df.Value != "n.d."]
 
 df["Date"] = pd.to_datetime(df["Date"])
+df.Pollutant = df.Pollutant.replace({
+    "Biossido di Azoto": "Nitrogen Dioxide",
+    "Ozono": "Ozone",
+    "Ossido di Carbonio": "Carbon Monoxide",
+    "Biossido Zolfo": "Sulfure Dioxide"
+})
 stations = df.Station.unique()
 
 
@@ -124,7 +130,7 @@ def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
         label_class_name="btn btn-outline-primary",
         label_checked_class_name="active",
         options=pollutants_list,
-        value="Biossido di Azoto"
+        value="Nitrogen Dioxide"
     )
 
 
@@ -173,11 +179,13 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     # make month average of data
-    df_year = data.groupby([data.Date.dt.year, data.Date.dt.month]).mean()
-    df_year.index.names = ["Anno", "Mese"]
+    df_year = data.groupby(
+        [data.Date.dt.year, data.Date.dt.month_name()]).mean()
+    df_year.index.names = ["Year", "Month"]
     df_year = df_year.reset_index()
-    fig = line_plot(df_year, "Mese", "Value", color="Anno",
+    fig = line_plot(df_year, "Month", "Value", color="Year",
                     title="Year comparison")
+    fig.update_xaxes(title_text="")
     return fig
 
 
@@ -207,7 +215,7 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data.loc[(data.Month >= 10) | (data.Month <= 3), "Season"] = "Winter"
 
     # make daily average of pollutant level
-    data = data.groupby(["Season", data.Date.dt.day_of_week]).mean()
+    data = data.groupby(["Season", data.Date.dt.day_name()]).mean()
     data.index.names = ["Season", "Weekday"]
     data = data.reset_index()
 
@@ -232,7 +240,7 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     fig.update_yaxes(showline=True, linewidth=1,
                      linecolor="#003E9A", fixedrange=True,
                      title_font_family="Sans serif", title_font_size=12)
-    fig.update_xaxes(showline=True, linewidth=1,
+    fig.update_xaxes(showline=True, linewidth=1, title_text="",
                      linecolor="#003E9A", title_font_family="Sans serif",
                      title_font_size=12)
 
