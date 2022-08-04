@@ -11,6 +11,13 @@ import logging
 import dash
 import os
 
+MONTHS = [
+    "January", "February", "March",
+    "April", "May", "June",
+    "July", "August", "September",
+    "October", "November", "December"
+]
+
 dash.register_page(__name__)
 
 if os.getenv("DEBUG"):
@@ -183,8 +190,20 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
         [data.Date.dt.year, data.Date.dt.month_name()]).mean()
     df_year.index.names = ["Year", "Month"]
     df_year = df_year.reset_index()
-    fig = line_plot(df_year, "Month", "Value", color="Year",
-                    title="Year comparison")
+
+    # set the ordering (e.g. January < February) for the column 'Month'
+    df_year["Month"] = pd.Categorical(df_year["Month"], categories = MONTHS, ordered = True)
+
+    # sort the values based on the ordering given before
+    df_year.sort_values("Month", inplace = True)
+
+    fig = line_plot(
+        df_year,
+        "Month",
+        "Value",
+        color="Year",
+        title="Year comparison"
+    )
     fig.update_xaxes(title_text="")
     return fig
 
