@@ -1,3 +1,4 @@
+import os
 from dash import Dash, html, dcc
 
 import dash_bootstrap_components as dbc
@@ -62,6 +63,14 @@ app.layout = html.Div(
     ]
 )
 
-
+server = app.server
 if __name__ == "__main__":
-    app.run(debug=True)
+    if os.getenv("DEBUG"):
+        app.run(debug=True)
+    else:
+        # Production
+        app.run_server(
+            port=8050,
+            host='0.0.0.0',
+            debug=False
+        )

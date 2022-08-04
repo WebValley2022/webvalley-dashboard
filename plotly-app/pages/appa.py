@@ -28,8 +28,8 @@ else:
     df = load_data_from_psql(query)
     logging.info("Query time", datetime.now() - start)
     df = df.rename({
-        "stazione": "Stazione",
-        "inquinante": "Inquinante",
+        "stazione": "Station",
+        "inquinante": "Pollutant",
         "ts": "Date",
         "valore": "Value",
     }, axis=1)
