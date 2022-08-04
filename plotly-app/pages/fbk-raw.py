@@ -477,7 +477,7 @@ layout = html.Div([
             dbc.Col(dcc.Graph(id="resistance-plot", config={
                     'displayModeBar': False,
                     'displaylogo': False,
-                    }, style=dict(height="75vh")
+                    }, style=dict(height="77vh")
             ), lg=7, xl=8),
             dbc.Col(
                 [
@@ -486,7 +486,7 @@ layout = html.Div([
                         'displaylogo': False,
                     }, style=dict(height="25vh")),
                     html.Div(
-                        style=dict(height="10px"),
+                        style=dict(height="1vh"),
                         className="transparent"
                     ),
                     dcc.Graph(id="middle-right-plot", className="side-plot", config={
@@ -494,7 +494,7 @@ layout = html.Div([
                         'displaylogo': False,
                     }, style=dict(height="25vh")),
                     html.Div(
-                        style=dict(height="10px"),
+                        style=dict(height="1vh"),
                         className="transparent"
                     ),
                     dcc.Graph(id="bottom-right-plot", className="side-plot", config={
