@@ -215,9 +215,11 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data.loc[(data.Month >= 10) | (data.Month <= 3), "Season"] = "Winter"
 
     # make daily average of pollutant level
-    data = data.groupby(["Season", data.Date.dt.day_name()]).mean()
-    data.index.names = ["Season", "Weekday"]
+    data = data.groupby(["Season", data.Date.dt.day_name(),
+                        data.Date.dt.day_of_week]).mean()
+    data.index.names = ["Season", "Weekday", "Weekday_num"]
     data = data.reset_index()
+    data = data.sort_values("Weekday_num")
 
     # draw main bar plot
     fig = px.bar(
