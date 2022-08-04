@@ -54,7 +54,7 @@ else:
 title = html.Div("Raw FBK Data", className="header-title")
 
 periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
-stations = ["Trento - S. Chiara", "Trento - Via Bolzano"]
+stations = ["Trento - S. Chiara", "Trento - via Bolzano"]
 
 dropdown_station = dcc.Dropdown(
     stations,
