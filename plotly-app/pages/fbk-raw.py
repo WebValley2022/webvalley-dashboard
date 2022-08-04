@@ -332,6 +332,7 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
     # drop Temperature, humidity, pressure
     dfFBK1ResV = dfFBK1.drop(["p", "rh", "t", "signal_res", "volt"], axis=1)
     dfFBK1ResV = dfFBK1ResV.reset_index()
+    dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
 
     fig = go.Figure()
 
