@@ -41,6 +41,7 @@ df = df[df.Valore != "n.d."]
 df["Data"] = pd.to_datetime(df["Data"])
 stations = df.Stazione.unique()
 
+
 def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
     """
     returns a dataframe formed of all the records of the selected station and pollutant
@@ -54,11 +55,12 @@ def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
         pd.DataFrame: the filtered dataframe
     """
     return df[
-        (df.Stazione == station) & 
+        (df.Stazione == station) &
         (df.Inquinante == pollutant)
     ]
 
-def line_plot(df: pd.DataFrame, x: str, y: str, color: str=None) -> go.Figure:
+
+def line_plot(df: pd.DataFrame, x: str, y: str, color: str = None) -> go.Figure:
     """
     Generates a line plot based on the dataframe, x and y given
 
@@ -78,6 +80,7 @@ def line_plot(df: pd.DataFrame, x: str, y: str, color: str=None) -> go.Figure:
 
     return fig
 
+
 @callback(
     Output("appa-pollutants", "children"),
     Input("selected-appa-station", "value")
@@ -94,7 +97,7 @@ def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
     """
     # filter station
     filtered_df = df[df.Stazione == selected_appa_station]
-    
+
     # get pollutants and build dict from it
     pollutants = filtered_df.Inquinante.unique()
     pollutants_list = [
@@ -102,14 +105,16 @@ def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
     ]
 
     return dbc.RadioItems(
-        id = "selected-pollutant",
-        class_name = "btn-group",
-        input_class_name = "btn-check",
-        label_class_name = "btn btn-outline-primary",
-        label_checked_class_name = "active",
-        options = pollutants_list,
-        value = pollutants_list[0]["value"],
+        id="selected-pollutant",
+        class_name="btn-group",
+        input_class_name="btn-check",
+        label_class_name="btn btn-outline-primary",
+        label_checked_class_name="active",
+        options=pollutants_list,
+        # value = pollutants_list[0]["value"],
+        value="Biossido di Azoto"
     )
+
 
 @callback(
     Output("main-plot", "figure"),
@@ -134,6 +139,7 @@ def update_main_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data_resampled = data_resampled.reset_index()
     fig = line_plot(data_resampled, "Data", "Valore")
     return fig
+
 
 @callback(
     Output("year-plot", "figure"),
@@ -160,6 +166,7 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     fig = line_plot(df_year, "Mese", "Valore", "Anno")
     return fig
 
+
 @callback(
     Output("week-plot", "figure"),
     Input("selected-appa-station", "value"),
@@ -181,7 +188,7 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
 
     # add new column
     data["Inverno"] = False
-    
+
     # set January to March and October to December as 'Inverno' True
     data.loc[(data.Month >= 10) | (data.Month <= 3), "Inverno"] = True
 
@@ -193,14 +200,15 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     # draw main bar plot
     fig = px.bar(
         data,
-        x       = "Giorno della settimana",
-        y       = "Valore",
-        color   = "Inverno",
-        barmode = "group"
+        x="Giorno della settimana",
+        y="Valore",
+        color="Inverno",
+        barmode="group"
     )
     fig.update_layout(margin=dict(l=0, r=0, t=5, b=0), plot_bgcolor="white")
     fig.update_yaxes(fixedrange=True)
     return fig
+
 
 @callback(
     Output("day-plot", "figure"),
@@ -232,23 +240,23 @@ def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.F
 title = html.Div("Dati APPA", className="header-title")
 dropdown = dcc.Dropdown(
     stations,
-    id = "selected-appa-station",
-    className = "dropdown",
-    value = stations[0]
+    id="selected-appa-station",
+    className="dropdown",
+    value=stations[0]
 )
 download_btn = dbc.Button(
-    [html.I(className = "fa-solid fa-download"), "Download full data"],
-    color = "primary",
-    class_name = "download-btn",
+    [html.I(className="fa-solid fa-download"), "Download full data"],
+    color="primary",
+    class_name="download-btn",
 )
 gas_btns = html.Div(
-    id = "appa-pollutants",
-    className = "radio-group"
+    id="appa-pollutants",
+    className="radio-group"
 )
 
 header = html.Div(
     [title, dropdown, download_btn, gas_btns],
-    className = "section-header"
+    className="section-header"
 )
 
 layout = html.Div(
@@ -257,48 +265,48 @@ layout = html.Div(
         dbc.Row([
             dbc.Col(
                 dcc.Graph(
-                    id = "main-plot",
-                    config = {
+                    id="main-plot",
+                    config={
                         'displayModeBar': False,
                         'displaylogo': False,
                     },
-                    style = dict(height = "70vh")
+                    style=dict(height="70vh")
                 ),
-                lg = 7,
-                xl = 8
+                lg=7,
+                xl=8
             ),
             dbc.Col(
                 [
                     dcc.Graph(
-                        id = "year-plot",
-                        config = {
+                        id="year-plot",
+                        config={
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style = dict(height = "30vh")
+                        style=dict(height="30vh")
                     ),
                     dcc.Graph(
-                        id = "week-plot",
-                        className = "side-plot",
-                        config = {
+                        id="week-plot",
+                        className="side-plot",
+                        config={
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style = dict(height = "20vh")
+                        style=dict(height="20vh")
                     ),
                     dcc.Graph(
-                        id = "day-plot",
-                        className = "side-plot",
-                        config = {
+                        id="day-plot",
+                        className="side-plot",
+                        config={
                             'displayModeBar': False,
                             'displaylogo': False,
                         },
-                        style = dict(height = "20vh")
+                        style=dict(height="20vh")
                     )
                 ],
-                md = 5,
-                lg = 5,
-                xl = 4
+                md=5,
+                lg=5,
+                xl=4
             ),
         ]),
     ],

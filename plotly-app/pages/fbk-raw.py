@@ -58,25 +58,17 @@ stations = ["Trento - S. Chiara", "Trento - Via Bolzano"]
 
 dropdown_station = dcc.Dropdown(
     stations,
-    id = "selected_station",
-    className = "dropdown",
-    value = stations[0]
+    id="selected_station",
+    className="dropdown",
+    value=stations[0]
 )
 
 dropdown_period = dcc.Dropdown(
     periods,
-    id = "selected_period",
-    className = "dropdown",
-    value = periods[0]
+    id="selected_period",
+    className="dropdown",
+    value=periods[0]
 )
-
-# resistance_plot = dcc.Graph(id="resistance-plot", className="side-plot")
-
-# top_right_plot = dcc.Graph(id="top_right_plot", className="side-plot")
-
-# middle_right_plot = dcc.Graph(id="middle_right_plot", className="side-plot")
-
-# bottom_right_plot = dcc.Graph(id="bottom_right_plot", className="side-plot")
 
 header = html.Div(
     [title, dropdown_station, dropdown_period],
@@ -91,26 +83,27 @@ header = html.Div(
 def update_resistance_plot(selected_period, selected_station):
     # filter only valid values
     fbk_data_ResV = fbk_data[fbk_data["signal_res"] != pd.NA]
-    
+
     # convert date to datetime
     fbk_data_ResV['Data'] = pd.to_datetime(fbk_data_ResV.ts.dt.date)
 
     # keep signal_resistance drop Temperature, humidity, pressure, voltage and heater resistance
-    fbk_data_ResV = fbk_data_ResV.drop(["p", "rh", "t", "volt", "heater_res"], axis=1)
+    fbk_data_ResV = fbk_data_ResV.drop(
+        ["p", "rh", "t", "volt", "heater_res"], axis=1)
     fbk_data_ResV = fbk_data_ResV.reset_index()
 
     # filter for desired time span
     fbk_data_ResV = verify_period(selected_period, fbk_data_ResV)
-    
+
     fig = go.Figure()
     # use hour as X axis
-    if(selected_period=="last hour" or selected_period == "last day"):
+    if(selected_period == "last hour" or selected_period == "last day"):
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             fig.add_trace(go.Scatter(
-                x = fbk_data_ResV[
+                x=fbk_data_ResV[
                     fbk_data_ResV["sensor_description"] == SensingMaterial
                 ]["ts"],
-                y = fbk_data_ResV[
+                y=fbk_data_ResV[
                     fbk_data_ResV["sensor_description"] == SensingMaterial
                 ]["signal_res"],
                 name=SensingMaterial)
@@ -119,23 +112,24 @@ def update_resistance_plot(selected_period, selected_station):
     else:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             fig.add_trace(go.Scatter(
-                x = fbk_data_ResV[
+                x=fbk_data_ResV[
                     fbk_data_ResV["sensor_description"] == SensingMaterial
                 ]["Data"],
-                y = fbk_data_ResV[
+                y=fbk_data_ResV[
                     fbk_data_ResV["sensor_description"] == SensingMaterial
                 ]["signal_res"],
                 name=SensingMaterial)
             )
-    
-    fig.update_yaxes(type = "log", range = [1, 3])
+
+    fig.update_yaxes(type="log", range=[1, 3])
     fig.update_layout(
         legend_title_text="Sensing Material",
-        margin = dict(l=0, r=5, t=0, b=0),
+        margin=dict(l=0, r=5, t=0, b=0),
         plot_bgcolor="white"
     )
-    fig.update_yaxes(title_text = "Value", fixedrange = True)
+    fig.update_yaxes(title_text="Value", fixedrange=True)
     return fig
+
 
 @callback(
     Output("middle_right_plot", "figure"),
@@ -157,8 +151,8 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     plot_width = 800
     plot_height = 400
 
-    dfFBK1 = fbk_data.dropna(inplace = False)
-    
+    dfFBK1 = fbk_data.dropna(inplace=False)
+
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
     dfFBK1TPH = dfFBK1.drop(["heater_res", "signal_res", "volt"], axis=1)
@@ -171,65 +165,48 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
 
     # Temperature graph
     trace1 = go.Scatter(
-        x = dfFBK1TPH["ts"],
-        y = dfFBK1TPH["t"],
-        name = "Temperature",
-        mode = "lines",
-        yaxis = "y1",
-        hovertemplate = "Parameter = Temperature<br>Value = %{y}<br>Date = %{x}<extra></extra>"
+        x=dfFBK1TPH["ts"],
+        y=dfFBK1TPH["t"],
+        name="Temperature",
+        mode="lines",
+        yaxis="y1",
+        hovertemplate="Parameter = Temperature<br>Value = %{y}<br>Date = %{x}<extra></extra>"
     )
 
     # Humidity graph
     trace2 = go.Scatter(
-        x = dfFBK1TPH["ts"],
-        y = dfFBK1TPH["rh"],
-        name = "Humidity",
-        mode = "lines",
-        yaxis = "y1",
-        hovertemplate = "Parameter = Humidity<br>Value = %{y}<br>Date = %{x}<extra></extra>"
+        x=dfFBK1TPH["ts"],
+        y=dfFBK1TPH["rh"],
+        name="Humidity",
+        mode="lines",
+        yaxis="y1",
+        hovertemplate="Parameter = Humidity<br>Value = %{y}<br>Date = %{x}<extra></extra>"
     )
 
     # Pressure graph
     trace3 = go.Scatter(
-        x = dfFBK1TPH["ts"],
-        y = dfFBK1TPH["p"],
-        name = "Pressure",
-        yaxis = "y2",
-        mode = "lines",
-        hovertemplate = "Parameter = Pressure<br>Value = %{y}<br>Date = %{x}<extra></extra>"
+        x=dfFBK1TPH["ts"],
+        y=dfFBK1TPH["p"],
+        name="Pressure",
+        yaxis="y2",
+        mode="lines",
+        hovertemplate="Parameter = Pressure<br>Value = %{y}<br>Date = %{x}<extra></extra>"
     )
 
     data = [trace1, trace2, trace3]
-    # layout = go.Layout(
-    #     title = "Temperature - Pressure - Humidity",
-    #     yaxis = dict(title = "Humidity - Temperature"),
-    #     yaxis2 = dict(
-    #         title ="Pressure",
-    #         overlaying = "y",
-    #         side = "right"
-    #     ),
-    #     width = plot_width,
-    #     height = plot_height,
-    #     legend = dict(
-    #         x = 1,
-    #         y = 1.02,
-    #         orientation="h",
-    #         yanchor ="bottom",
-    #         xanchor = "right"
-    #     )
-    # )
 
     fig = go.Figure(data=data)
 
     fig.update_layout(
-        margin = dict(l=0, r=5, t=0, b=0),
-        plot_bgcolor = "white",
-        font = dict(size=10)
+        margin=dict(l=0, r=5, t=0, b=0),
+        plot_bgcolor="white",
+        font=dict(size=10)
     )
 
     fig.update_yaxes(fixedrange=True)
 
     return fig
+
 
 @callback(
     Output("bottom_right_plot", "figure"),
@@ -252,18 +229,19 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["volt"] != pd.NA]
-    
+
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
     # drop Temperature, humidity, pressure
-    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t", "signal_res", "heater_res"], axis=1)
+    dfFBK1ResV = dfFBK1.drop(
+        ["p", "rh", "t", "signal_res", "heater_res"], axis=1)
     dfFBK1ResV = dfFBK1ResV.reset_index()
-    
+
     # filter for desired time span
     dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
 
     fig = go.Figure()
-    fig.update_yaxes(type = "log")
+    fig.update_yaxes(type="log")
 
     # use hour as X axis
     if(selected_period == "last hour" or selected_period == "last day"):
@@ -300,6 +278,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
 
     return fig
 
+
 @callback(
     Output("top_right_plot", "figure"),
     Input("selected_period", "value"),
@@ -307,10 +286,10 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
 )
 def update_top_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     dfFBK1 = fbk_data
-    
+
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["heater_res"] != pd.NA]
-    
+
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
     # drop Temperature, humidity, pressure
@@ -320,7 +299,7 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
     fig = go.Figure()
 
     # use hour as X axis
-    if(selected_period=="last hour" or selected_period == "last day"):
+    if(selected_period == "last hour" or selected_period == "last day"):
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(go.Scatter(
                 x=dfFBK1ResV[
