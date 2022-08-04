@@ -31,14 +31,14 @@ pollutants = [
     dict(label="Ossido di Carbonio", value="CO")
 ]
 
-title = html.Div("Dati FBK - Fitted", className="header-title")
+title = html.Div("Fitted FBK Data", className="header-title")
 
 # build dropdown of stations
 dropdown = dcc.Dropdown(
     fbk_stations,
-    id = "selected-station",
-    className = "dropdown",
-    value = fbk_stations[0]
+    id="selected-station",
+    className="dropdown",
+    value=fbk_stations[0]
 )
 
 download_btn = dbc.Button(
@@ -62,18 +62,18 @@ def create_download_file(n_clicks):
 
 # build gas buttons
 gas_btns = html.Div(dbc.RadioItems(
-    id = "selected-fbk-pollutant",
-    class_name = "btn-group",
-    input_class_name = "btn-check",
-    label_class_name = "btn btn-outline-primary",
-    label_checked_class_name = "active",
+    id="selected-fbk-pollutant",
+    class_name="btn-group",
+    input_class_name="btn-check",
+    label_class_name="btn btn-outline-primary",
+    label_checked_class_name="active",
     options=pollutants,
-    value = "NO2"
-), className = "radio-group")
+    value="NO2"
+), className="radio-group")
 
 header = html.Div(
     [title, dropdown, download_btn, download_it, gas_btns],
-    className = "section-header"
+    className="section-header"
 )
 
 graph_selectors = html.Div(
@@ -82,27 +82,27 @@ graph_selectors = html.Div(
             [
                 "Visualizza: ",
                 dcc.Dropdown(
-                    id = "selected-period",
-                    options = [
+                    id="selected-period",
+                    options=[
                         "ultime 24h",
                         "ultima settimana",
                         "ultimo mese",
                         "ultimo anno",
                         "tutto"
                     ],
-                    className = "dropdown"
+                    className="dropdown"
                 )
             ],
-            className = "graph-dropdown"
+            className="graph-dropdown"
         ),
         daq.ToggleSwitch(
-            id = "toggle-comparison",
-            label = "Compare with APPA",
-            color = "#0d6efd",
-            className = "ml-auto toggle"
+            id="toggle-comparison",
+            label="Compare with APPA",
+            color="#0d6efd",
+            className="ml-auto toggle"
         )
     ],
-    className = "d-flex flex-grow justify-content-between"
+    className="d-flex flex-grow justify-content-between"
 )
 
 comparison_graph = html.Div(
@@ -123,11 +123,11 @@ comparison_graph = html.Div(
     Input("selected-period", "value")
 )
 def update_comparison_graph(
-        selected_station: str,
-        selected_pollutant: str,
-        toggle_comparison: str,
-        selected_period: str
-    ) -> go.Figure:
+    selected_station: str,
+    selected_pollutant: str,
+    toggle_comparison: str,
+    selected_period: str
+) -> go.Figure:
     """
     Updates the graph representing the comparison between
     APPA data and model prediction
@@ -160,10 +160,10 @@ def update_comparison_graph(
     # prediction graph
     fig.add_trace(
         go.Scatter(
-            x = data["Time"],
-            y = data[pollutant_pred],
-            mode = "lines+markers",
-            name = "FBK"
+            x=data["Time"],
+            y=data[pollutant_pred],
+            mode="lines+markers",
+            name="FBK"
         )
     )
 
@@ -171,10 +171,10 @@ def update_comparison_graph(
         # appa data graph
         fig.add_trace(
             go.Scatter(
-                x = data["Time"],
-                y = data[pollutant_real],
-                mode = "lines+markers",
-                name = "APPA",
+                x=data["Time"],
+                y=data[pollutant_real],
+                mode="lines+markers",
+                name="APPA",
             )
         )
 
@@ -241,14 +241,15 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     ).mean()
     # mean_temp.insert(1, "Inquinante", pollutant)
     # mean_temp.insert(1, "Stazione", station)
-    mean_temp.reset_index(inplace = True)
+    mean_temp.reset_index(inplace=True)
 
     return mean_temp
+
 
 layout = html.Div(
     [
         header,
-        html.Div([comparison_graph], className = "fbk-main-plot")
+        html.Div([comparison_graph], className="fbk-main-plot")
     ],
-    className = "section"
+    className="section"
 )

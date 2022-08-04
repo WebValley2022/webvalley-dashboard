@@ -276,7 +276,7 @@ def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.F
     return fig
 
 
-title = html.Div("Dati APPA", className="header-title")
+title = html.Div("APPA Data", className="header-title")
 dropdown = dcc.Dropdown(
     stations,
     id="selected-appa-station",

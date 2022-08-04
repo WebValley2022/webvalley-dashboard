@@ -51,7 +51,7 @@ else:
     logging.info("Query time", datetime.now() - start)
     # df.to_csv("data_fbk_from_db.csv")
 
-title = html.Div("Dati FBK - Raw", className="header-title")
+title = html.Div("Raw FBK Data", className="header-title")
 
 periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
 stations = ["Trento - S. Chiara", "Trento - Via Bolzano"]
@@ -187,7 +187,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
 
     # filter for desired time span
     dfFBK1TPH = verify_period_TPH(selected_period, dfFBK1TPH)
-    dfFBK1TPH.sort_values(by = "ts", inplace = True)
+    dfFBK1TPH.sort_values(by="ts", inplace=True)
 
     # Temperature graph
     trace1 = go.Scatter(
@@ -224,18 +224,18 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     fig = go.Figure(data=data)
 
     fig.update_layout(
-        margin = dict(l=0, r=5, t=0, b=0),
-        plot_bgcolor = "white",
-        font = dict(size=10),
-        yaxis = dict(
-            title = "temperature & humidity"
+        margin=dict(l=0, r=5, t=0, b=0),
+        plot_bgcolor="white",
+        font=dict(size=10),
+        yaxis=dict(
+            title="temperature & humidity"
         ),
-        yaxis2 = dict(
-            title = 'pressure',
-            overlaying = 'y',
-            side = 'right'
+        yaxis2=dict(
+            title='pressure',
+            overlaying='y',
+            side='right'
         ),
-        legend = {
+        legend={
             "x": 1,
             "y": 1,
             "yanchor": "bottom",
@@ -285,7 +285,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
 
     fig = go.Figure()
-    #fig.update_yaxes(type="log")
+    # fig.update_yaxes(type="log")
 
     # use hour as X axis
     if(selected_period == "last hour" or selected_period == "last day"):
