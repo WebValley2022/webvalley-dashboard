@@ -1,6 +1,7 @@
 from dash import html, dcc, Input, Output, callback
 from db_utils import load_data_from_psql
 from datetime import datetime
+from .utils import utils
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
@@ -13,7 +14,7 @@ import os
 dash.register_page(__name__)
 
 if os.getenv("DEBUG"):
-    df = pd.read_csv("./data/21_22_APPA.csv")
+    df = utils.get_appa_data()
 else:
     query = """
     select
@@ -37,7 +38,7 @@ else:
 # keep only rows with a value that's not NA
 df = df[df.Valore != "n.d."]
 
-df.Data = pd.to_datetime(df.Data)
+df["Data"] = pd.to_datetime(df["Data"])
 stations = df.Stazione.unique()
 
 def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:

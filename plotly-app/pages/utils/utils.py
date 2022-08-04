@@ -2,8 +2,9 @@ import pandas as pd
 import os
 
 # paths relative to THIS script
-FBK_FILE_PATH  = "./data_fbk_from_fb.csv"
-APPA_FILE_PATH = "./merged_APPA_data.csv"
+FBK_FILE_PATH        = "./data_fbk_from_db.csv"
+APPA_FILE_PATH       = "./merged_APPA_data.csv"
+PREDICTION_FILE_PATH = "./appa1_predictions.csv"
 
 def get_fbk_data() -> pd.DataFrame:
     """
@@ -50,5 +51,17 @@ def get_appa_data() -> pd.DataFrame:
     """
     return pd.read_csv(
         os.path.join(os.path.dirname(__file__), APPA_FILE_PATH),
+        encoding='windows-1252'
+    )
+
+def get_prediction_data() -> pd.DataFrame:
+    """
+    Fetches the local prediction
+
+    Returns:
+        pd.DataFrame: the dataframe
+    """
+    return pd.read_csv(
+        os.path.join(os.path.dirname(__file__), PREDICTION_FILE_PATH),
         encoding='windows-1252'
     )
