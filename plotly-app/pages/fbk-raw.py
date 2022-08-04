@@ -122,26 +122,32 @@ def update_resistance_plot(selected_period, selected_station):
     # use hour as X axis
     if(selected_period == "last hour" or selected_period == "last day"):
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            fig.add_trace(go.Scatter(
-                x=fbk_data_ResV[
-                    fbk_data_ResV["sensor_description"] == SensingMaterial
-                ]["ts"],
-                y=fbk_data_ResV[
-                    fbk_data_ResV["sensor_description"] == SensingMaterial
-                ]["signal_res"],
-                name=SensingMaterial)
+            fig.add_trace(
+                go.Scatter(
+                    x = fbk_data_ResV[
+                        fbk_data_ResV["sensor_description"] == SensingMaterial
+                    ]["ts"],
+                    y = fbk_data_ResV[
+                        fbk_data_ResV["sensor_description"] == SensingMaterial
+                    ]["signal_res"],
+                    name = SensingMaterial,
+                    visible = "legendonly" if SensingMaterial == "SnO2" else True
+                )
             )
     # use days as X axis
     else:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            fig.add_trace(go.Scatter(
-                x=fbk_data_ResV[
-                    fbk_data_ResV["sensor_description"] == SensingMaterial
-                ]["Data"],
-                y=fbk_data_ResV[
-                    fbk_data_ResV["sensor_description"] == SensingMaterial
-                ]["signal_res"],
-                name=SensingMaterial)
+            fig.add_trace(
+                go.Scatter(
+                    x = fbk_data_ResV[
+                        fbk_data_ResV["sensor_description"] == SensingMaterial
+                    ]["Data"],
+                    y = fbk_data_ResV[
+                        fbk_data_ResV["sensor_description"] == SensingMaterial
+                    ]["signal_res"],
+                    name = SensingMaterial,
+                    visible = "legendonly" if SensingMaterial == "SnO2" else True
+                )
             )
 
     #fig.update_yaxes(type="log", range=[1, 3])
@@ -290,26 +296,30 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     # use hour as X axis
     if(selected_period == "last hour" or selected_period == "last day"):
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
-            fig.add_trace(go.Scatter(
-                x=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["ts"],
-                y=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["volt"],
-                name=SensingMaterial)
+            fig.add_trace(
+                go.Scatter(
+                    x = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["ts"],
+                    y = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["volt"],
+                    name = SensingMaterial
+                )
             )
     # use days as X axis
     else:
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
-            fig.add_trace(go.Scatter(
-                x=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["Data"],
-                y=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["volt"],
-                name=SensingMaterial),
+            fig.add_trace(
+                go.Scatter(
+                    x = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["Data"],
+                    y = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["volt"],
+                    name = SensingMaterial
+                ),
             )
 
     fig.update_layout(
@@ -348,26 +358,30 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
     # use hour as X axis
     if(selected_period == "last hour" or selected_period == "last day"):
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
-            fig.add_trace(go.Scatter(
-                x=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["ts"],
-                y=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["heater_res"],
-                name=SensingMaterial)
+            fig.add_trace(
+                go.Scatter(
+                    x = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["ts"],
+                    y = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["heater_res"],
+                    name = SensingMaterial
+                )
             )
     # use days as X axis
     else:
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
-            fig.add_trace(go.Scatter(
-                x=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["Data"],
-                y=dfFBK1ResV[
-                    dfFBK1ResV["sensor_description"] == SensingMaterial
-                ]["heater_res"],
-                name=SensingMaterial)
+            fig.add_trace(
+                go.Scatter(
+                    x = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["Data"],
+                    y = dfFBK1ResV[
+                        dfFBK1ResV["sensor_description"] == SensingMaterial
+                    ]["heater_res"],
+                    name = SensingMaterial
+                )
             )
 
     fig.update_layout(legend_title_text="Sensing Material",
