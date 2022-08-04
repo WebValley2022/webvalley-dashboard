@@ -58,14 +58,14 @@ stations = ["Trento - S. Chiara", "Trento - Via Bolzano"]
 
 dropdown_station = dcc.Dropdown(
     stations,
-    id="selected_station",
+    id="selected-station",
     className="dropdown",
     value=stations[0]
 )
 
 dropdown_period = dcc.Dropdown(
     periods,
-    id="selected_period",
+    id="selected-period",
     className="dropdown",
     value=periods[0]
 )
@@ -76,10 +76,11 @@ header = html.Div(
 )
 
 
-@callback(Output("resistance-plot", "figure"),
-          Input("selected-period", "value"),
-          Input("selected-station", "value"),
-          )
+@callback(
+    Output("resistance-plot", "figure"),
+    Input("selected-period", "value"),
+    Input("selected-station", "value"),
+)
 def update_resistance_plot(selected_period, selected_station):
     # filter only valid values
     fbk_data_ResV = fbk_data[fbk_data["signal_res"] != pd.NA]
@@ -121,7 +122,7 @@ def update_resistance_plot(selected_period, selected_station):
                 name=SensingMaterial)
             )
 
-    fig.update_yaxes(type="log", range=[1, 3])
+    #fig.update_yaxes(type="log", range=[1, 3])
     fig.update_layout(
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=0, b=0),
@@ -132,9 +133,9 @@ def update_resistance_plot(selected_period, selected_station):
 
 
 @callback(
-    Output("middle_right_plot", "figure"),
-    Input("selected_period", "value"),
-    Input("selected_station", "value"),
+    Output("middle-right-plot", "figure"),
+    Input("selected-period", "value"),
+    Input("selected-station", "value"),
 )
 def update_middle_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     """
@@ -209,9 +210,9 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
 
 
 @callback(
-    Output("bottom_right_plot", "figure"),
-    Input("selected_period", "value"),
-    Input("selected_station", "value"),
+    Output("bottom-right-plot", "figure"),
+    Input("selected-period", "value"),
+    Input("selected-station", "value"),
 )
 def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     """
@@ -241,7 +242,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
 
     fig = go.Figure()
-    fig.update_yaxes(type="log")
+    #fig.update_yaxes(type="log")
 
     # use hour as X axis
     if(selected_period == "last hour" or selected_period == "last day"):
@@ -280,9 +281,9 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
 
 
 @callback(
-    Output("top_right_plot", "figure"),
-    Input("selected_period", "value"),
-    Input("selected_station", "value"),
+    Output("top-right-plot", "figure"),
+    Input("selected-period", "value"),
+    Input("selected-station", "value"),
 )
 def update_top_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     dfFBK1 = fbk_data
@@ -373,6 +374,12 @@ def verify_period_TPH(period, df):
         df = df.reset_index()
         df = df.set_index("ts")
         df = df.last("30D")
+        df = df.reset_index()
+        return df
+    elif period == "last week":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("7D")
         df = df.reset_index()
         return df
     elif period == "last day":
