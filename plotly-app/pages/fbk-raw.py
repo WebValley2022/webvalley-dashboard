@@ -217,14 +217,26 @@ def update_middle_right_plot(selected_period, selected_station):
 
     return go.Figure(data=data, layout=layout)
 
+@callback(Output("bottom_right_plot", "figure"),
+        Input("selected_period", "value"),
+        Input("selected_station", "value"),
+        )
+def update_bottom_right_plot(selected_period, selected_station):
+    dfFBK1 = pd.read_csv('FBK data/data_fbk_from_db.csv', encoding='windows-1252')
+    dfFBK1 = dfFBK1[
+        dfFBK1["volt"] != pd.NA
+    ]
+    dfFBK1=dfFBK1.drop(["Unnamed: 0", "node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"], axis=1)
+
     dfFBK1["signal_res"] = dfFBK1["signal_res"].astype(float)
     dfFBK1["heater_res"] = dfFBK1["heater_res"].astype(float)
     dfFBK1["volt"] = dfFBK1["volt"].astype(float)
     dfFBK1["t"] = dfFBK1["t"].astype(float)
     dfFBK1["rh"] = dfFBK1["rh"].astype(float)
     dfFBK1["p"] = dfFBK1["p"].astype(float)
-    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description', 'ts'])
 
+    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description','ts'])
+    
     dfFBK1['ts'] = pd.to_datetime(dfFBK1.ts)
     dfFBK1['Data'] = pd.to_datetime(dfFBK1.ts.dt.date)
     dfFBK1['Minute'] = dfFBK1.ts.dt.minute
