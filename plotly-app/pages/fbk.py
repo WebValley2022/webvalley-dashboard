@@ -7,6 +7,7 @@ import dash_daq as daq
 import pandas as pd
 import numpy as np
 import dash
+import logging
 
 dash.register_page(__name__)
 
@@ -40,12 +41,25 @@ dropdown = dcc.Dropdown(
     value = fbk_stations[0]
 )
 
-# build download button
 download_btn = dbc.Button(
-    [html.I(className = "fa-solid fa-download"), " Download full data"],
-    class_name = "download-btn",
-    color = "primary"
+    [html.I(className="fa-solid fa-download"), " Download full data"],
+    color="primary",
+    id="btn_fbk_fitted",
+    class_name="download-btn",
 )
+download_it = dcc.Download(id="download-fbk-fitted")
+
+
+@callback(
+    Output("download-fbk-fitted", "data"),
+    Input("btn_fbk_fitted", "n_clicks"),
+    prevent_initial_call=True,
+)
+def create_download_file(n_clicks):
+    global df
+    return dcc.send_data_frame(df.to_csv, "fbk_fitted_data.csv")
+
+
 
 # build gas buttons
 gas_btns = html.Div(dbc.RadioItems(
@@ -59,7 +73,7 @@ gas_btns = html.Div(dbc.RadioItems(
 ), className = "radio-group")
 
 header = html.Div(
-    [title, dropdown, download_btn, gas_btns],
+    [title, dropdown, download_btn, download_it, gas_btns],
     className = "section-header"
 )
 
