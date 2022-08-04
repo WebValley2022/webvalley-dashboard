@@ -86,7 +86,7 @@ dropdown_period = dcc.Dropdown(
     periods,
     id="selected-period",
     className="dropdown",
-    value=periods[0]
+    value=periods[4]
 )
 
 header = html.Div(
@@ -230,7 +230,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     fig = go.Figure(data=data)
 
     fig.update_layout(
-        margin=dict(l=0, r=5, t=0, b=0),
+        margin=dict(l=0, r=5, t=10, b=10),
         plot_bgcolor="white",
         font=dict(size=10),
         yaxis=dict(
@@ -478,10 +478,18 @@ layout = html.Div([
                         'displayModeBar': False,
                         'displaylogo': False,
                     }, style=dict(height="25vh")),
+                    html.Div(
+                        style = dict(height="10px"),
+                        className = "transparent"
+                    ),
                     dcc.Graph(id="middle-right-plot", className="side-plot", config={
                         'displayModeBar': False,
                         'displaylogo': False,
                     }, style=dict(height="25vh")),
+                    html.Div(
+                        style = dict(height="10px"),
+                        className = "transparent"
+                    ),
                     dcc.Graph(id="bottom-right-plot", className="side-plot", config={
                         'displayModeBar': False,
                         'displaylogo': False,
@@ -492,5 +500,5 @@ layout = html.Div([
         ],
     ),
 ],
-className="section"
+className="section fullHeight"
 )

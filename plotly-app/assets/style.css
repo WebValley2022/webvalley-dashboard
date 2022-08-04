@@ -2,6 +2,10 @@
   margin: 0;
 }
 
+html {
+  overflow-y: hidden;
+}
+
 .section {
   background-color: #eff4f9;
   padding-top: 2%;
@@ -62,4 +66,16 @@
 
 .content {
   height: 100%;
+}
+
+.transparent {
+  background-color: transparent;
+}
+
+.fullHeightAndPadding {
+  height: 90vh;
+}
+
+.fullHeight {
+  height: 100vh;
 }

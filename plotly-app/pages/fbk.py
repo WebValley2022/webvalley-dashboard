@@ -251,5 +251,5 @@ layout = html.Div(
         header,
         html.Div([comparison_graph], className="fbk-main-plot")
     ],
-    className="section"
+    className="section fullHeight"
 )

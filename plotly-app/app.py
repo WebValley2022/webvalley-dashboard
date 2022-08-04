@@ -49,6 +49,7 @@ sidebar = html.Div(
             pills=True,
         ),
     ],
+    className = "fullHeight"
 )
 
 app.layout = html.Div(
@@ -57,10 +58,12 @@ app.layout = html.Div(
         dbc.Row(
             [
                 dbc.Col(sidebar, lg=3, xl=2, md=3, className="sidebar"),
-                dbc.Col(dash.page_container, lg=9, xl=10, md=9),
-            ]
+                dbc.Col(dash.page_container, lg=9, xl=10, md=9, class_name="fullHeightAndPadding"),
+            ],
+            className = "fullHeight"
         ),
-    ]
+    ],
+    className = "fullHeight"
 )
 
 server = app.server

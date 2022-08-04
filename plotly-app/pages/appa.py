@@ -365,5 +365,5 @@ layout = html.Div(
             ),
         ]),
     ],
-    className="section"
+    className="section fullHeight"
 )
