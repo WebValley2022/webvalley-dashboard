@@ -37,6 +37,7 @@ df = df[df.Valore != "n.d."]
 df.Data = pd.to_datetime(df.Data)
 stations = df.Stazione.unique()
 
+
 def filter_df(df, station, pollutant):
     return df[
         (df.Stazione == station) & (
@@ -97,9 +98,9 @@ def update_year_plot(selected_appa_station, selected_pollutant):
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
-    df_year.index.names = ["Year", "Month"]
+    df_year.index.names = ["Anno", "Month"]
     df_year = df_year.reset_index()
-    fig = line_plot(df_year, "Month", "Valore", "Year")
+    fig = line_plot(df_year, "Month", "Valore", "Anno")
     return fig
 
 
@@ -141,13 +142,12 @@ def update_day_plot(selected_appa_station, selected_pollutant):
     df_day = data.groupby(data.Data.dt.hour).mean()
     df_day.index.names = ["Hour"]
     df_day = df_day.reset_index()
-    print(df_day)
     fig = line_plot(df_day, "Hour", "Valore")
 
     return fig
 
 
-title = html.Div("APPA Data", className="header-title")
+title = html.Div("Dati APPA", className="header-title")
 dropdown = dcc.Dropdown(
     stations, id="selected-appa-station", className="dropdown", value=stations[0]
 )
@@ -156,27 +156,28 @@ download_btn = dbc.Button(
     color="primary",
     class_name="download-btn",
 )
+
 gas_btns = html.Div(id="appa-pollutants", className="radio-group")
+
+header = html.Div([title, dropdown, download_btn, gas_btns],
+                  className="section-header")
 
 layout = html.Div(
     [
-        title,
-        dropdown,
-        download_btn,
-        gas_btns,
+        header,
         dbc.Row(
             [
                 dbc.Col(dcc.Graph(id="main-plot", config={
                     'displayModeBar': False,
                     'displaylogo': False,
-                }, style=dict(height="80vh")
+                }, style=dict(height="70vh")
                 ), lg=7, xl=8),
                 dbc.Col(
                     [
                         dcc.Graph(id="year-plot", config={
                             'displayModeBar': False,
                             'displaylogo': False,
-                        }, style=dict(height="40vh")),
+                        }, style=dict(height="30vh")),
                         dcc.Graph(id="week-plot", className="side-plot", config={
                             'displayModeBar': False,
                             'displaylogo': False,

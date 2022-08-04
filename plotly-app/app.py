@@ -23,23 +23,23 @@ sidebar = html.Div(
         dbc.Nav(
             [
                 dbc.NavLink(
-                    "FBK Raw Data",
+                    "Dati FBK - Raw",
                     href="/fbk-raw",
                     active="exact",
                     class_name="sidebar-link",
                 ),
                 dbc.NavLink(
-                    "FBK Fitted Data",
+                    "Dati FBK - Fitted",
                     href="/fbk",
                     active="exact",
                     class_name="sidebar-link",
                 ),
                 dbc.NavLink(
-                    "APPA Data", href="/appa", active="exact", class_name="sidebar-link"
+                    "Dati APPA", href="/appa", active="exact", class_name="sidebar-link"
                 ),
                 html.Hr(),
                 dbc.NavLink(
-                    "Settings",
+                    "Impostazioni",
                     href="/settings",
                     active="exact",
                     class_name="sidebar-link",
