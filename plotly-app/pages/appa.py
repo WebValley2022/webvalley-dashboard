@@ -63,10 +63,10 @@ def line_plot(df: pd.DataFrame, x: str, y: str, color: str=None) -> go.Figure:
     Generates a line plot based on the dataframe, x and y given
 
     Args:
-        df (pd.DataFrame): the dataframe where to take the data from
+        df (pd.DataFrame): the dataframe to take the data from
         x (str): the column to select as X axis
         y (str): the column to select as Y axis
-        color (str, optional): the color of the line. Defaults to None.
+        color (str, optional): the column to assign different colors for multiple plots. Defaults to None.
 
     Returns:
         go.Figure: the line plot
