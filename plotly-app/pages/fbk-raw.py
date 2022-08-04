@@ -47,7 +47,7 @@ else:
     order by p.sensor_ts;
     """
     start = datetime.now()
-    df = load_data_from_psql(query)
+    fbk_data = load_data_from_psql(query)
     logging.info("Query time", datetime.now() - start)
     # df.to_csv("data_fbk_from_db.csv")
 
@@ -63,6 +63,25 @@ dropdown_station = dcc.Dropdown(
     value=stations[0]
 )
 
+download_btn = dbc.Button(
+    [html.I(className="fa-solid fa-download"), " Download full data"],
+    color="primary",
+    id="btn_fbk_raw",
+    class_name="download-btn",
+)
+download_it = dcc.Download(id="download-fbk-raw")
+
+
+@callback(
+    Output("download-fbk-raw", "data"),
+    Input("btn_fbk_raw", "n_clicks"),
+    prevent_initial_call=True,
+)
+def create_download_file(n_clicks):
+    global fbk_data
+    return dcc.send_data_frame(fbk_data.to_csv, "fbk_raw_data.csv")
+
+
 dropdown_period = dcc.Dropdown(
     periods,
     id="selected-period",
@@ -71,7 +90,7 @@ dropdown_period = dcc.Dropdown(
 )
 
 header = html.Div(
-    [title, dropdown_station, dropdown_period],
+    [title, dropdown_station, download_btn, download_it, dropdown_period],
     className="section-header"
 )
 

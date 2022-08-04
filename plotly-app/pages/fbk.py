@@ -60,7 +60,6 @@ def create_download_file(n_clicks):
     return dcc.send_data_frame(df.to_csv, "fbk_fitted_data.csv")
 
 
-
 # build gas buttons
 gas_btns = html.Div(dbc.RadioItems(
     id = "selected-fbk-pollutant",
