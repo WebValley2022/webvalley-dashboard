@@ -15,7 +15,7 @@ dash.register_page(__name__)
 global dfFBK1
 
 if os.getenv("DEBUG"):
-    dfFBK1 = pd.read_csv('../FBK data/data_fbk_from_db.csv',
+    dfFBK1 = pd.read_csv('FBK data/data_fbk_from_db.csv',
                          encoding='windows-1252')
 else:
     query = """
@@ -63,17 +63,17 @@ dropdown_period = dcc.Dropdown(
     periods, id='selected_period', className="dropdown", value=periods[0]
 )
 
-#resistance_plot = dcc.Graph(id="resistance_plot", className="side-plot")
+resistance_plot = dcc.Graph(id="resistance_plot", className="side-plot")
 
-#right_top_plot = dcc.Graph(id="right_top_plot", className="side-plot")
+top_right_plot = dcc.Graph(id="top_right_plot", className="side-plot")
 
 middle_right_plot = dcc.Graph(id="middle_right_plot", className="side-plot")
 
 bottom_right_plot = dcc.Graph(id="bottom_right_plot", className="side-plot")
 
 header = html.Div(
-    [title, dropdown_period, dropdown_station,
-        middle_right_plot, bottom_right_plot],
+    [title, dropdown_period, dropdown_station, resistance_plot, 
+    top_right_plot, middle_right_plot, bottom_right_plot],
     className="section-header"
 )
 
@@ -81,7 +81,70 @@ layout = html.Div([
     header
 ])
 
+@callback(Output("resistance_plot", "figure"),
+        Input("selected_period", "value"),
+        Input("selected_station", "value"),
+        )
+def update_resistance_plot(selected_period, selected_station):
+    dfFBK1 = pd.read_csv('FBK data/data_fbk_from_db.csv', encoding='windows-1252')
+    dfFBK1 = dfFBK1[dfFBK1["signal_res"] != pd.NA]
+    dfFBK1=dfFBK1.drop(["Unnamed: 0", "node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"], axis=1)
 
+    #conversion in float
+    dfFBK1["signal_res"] = dfFBK1["signal_res"].astype(float)
+    dfFBK1["heater_res"] = dfFBK1["heater_res"].astype(float)
+    dfFBK1["volt"] = dfFBK1["volt"].astype(float)
+    dfFBK1["t"] = dfFBK1["t"].astype(float)
+    dfFBK1["rh"] = dfFBK1["rh"].astype(float)
+    dfFBK1["p"] = dfFBK1["p"].astype(float)
+
+    #dropping duplicates
+    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description','ts'])
+    
+    dfFBK1['ts'] = pd.to_datetime(dfFBK1.ts)
+    dfFBK1['Data'] = pd.to_datetime(dfFBK1.ts.dt.date)
+
+    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t"], axis=1) #drop Temperature, humidity, pressure
+    dfFBK1ResV = dfFBK1ResV.reset_index()
+
+    dfFBK1ResV["Data"] = pd.to_datetime(dfFBK1ResV["Data"])
+    dfFBK1ResV = dfFBK1ResV.drop(["volt", "heater_res"], axis=1)
+    dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
+    fig = go.Figure()
+    
+    if(selected_period=="by hour" or selected_period == "by day"):
+        for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
+            fig.add_trace(go.Scatter(
+                x = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["ts"],
+                y = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["signal_res"],
+                name=SensingMaterial)
+            )
+    else:
+        for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
+            fig.add_trace(go.Scatter(
+                x = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["Data"],
+                y = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["signal_res"],
+                name=SensingMaterial)
+            )
+    
+    fig.update_yaxes(type="log", range=[1,3])
+    fig.update_layout(legend_title_text="Sensing Material")
+    fig.update_yaxes(title_text="Value")
+
+    return fig
+
+@callback(Output("middle_right_plot", "figure"),
+        Input("selected_period", "value"),
+        Input("selected_station", "value"),
+        )
 def update_middle_right_plot(selected_period, selected_station):
     plot_width = 800
     plot_height = 400
@@ -106,19 +169,13 @@ def update_middle_right_plot(selected_period, selected_station):
     dfFBK1['Minute'] = dfFBK1.ts.dt.minute
     dfFBK1['Ora'] = str(dfFBK1.ts.dt.time)
 
-    # drop Temperature, humidity, pressure
     dfFBK1TPH = dfFBK1.drop(["heater_res", "signal_res", "volt"], axis=1)
-
-    dfFBK1TPH = dfFBK1TPH.groupby(
-        ["sensor_description", "node_description"]).resample("1T", on="ts").mean()
+    dfFBK1TPH = dfFBK1TPH.groupby(["sensor_description", "node_description"]).resample("1T", on="ts").mean() 
     dfFBK1TPH = dfFBK1TPH.reset_index()
 
-    # print("AA")
-    # print(dfFBK1TPH)
+    dfFBK1TPH = verify_period_TPH(selected_period, dfFBK1TPH)
 
-    # dfFBK1TPH["Data"] = pd.to_datetime(dfFBK1TPH["Data"])
-    # dfFBK1TPH = dfFBK1TPH.reset_index()
-    #dfFBK1TPH = verify_period(selected_period, dfFBK1TPH)
+    print(dfFBK1TPH)#drop Temperature, humidity, pressure
 
     trace1 = go.Scatter(x=dfFBK1TPH['ts'],
                         y=dfFBK1TPH['t'],
@@ -160,21 +217,66 @@ def update_middle_right_plot(selected_period, selected_station):
 
     return go.Figure(data=data, layout=layout)
 
+    dfFBK1["signal_res"] = dfFBK1["signal_res"].astype(float)
+    dfFBK1["heater_res"] = dfFBK1["heater_res"].astype(float)
+    dfFBK1["volt"] = dfFBK1["volt"].astype(float)
+    dfFBK1["t"] = dfFBK1["t"].astype(float)
+    dfFBK1["rh"] = dfFBK1["rh"].astype(float)
+    dfFBK1["p"] = dfFBK1["p"].astype(float)
+    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description', 'ts'])
 
-@callback(Output("bottom_right_plot", "figure"),
-          Output("middle_right_plot", "figure"),
-          Input("selected_period", "value"),
-          Input("selected_station", "value"),
-          )
-def update_bottom_right_plot(selected_period, selected_station):
-    dfFBK1 = pd.read_csv('FBK data/data_fbk_from_db.csv',
-                         encoding='windows-1252')
+    dfFBK1['ts'] = pd.to_datetime(dfFBK1.ts)
+    dfFBK1['Data'] = pd.to_datetime(dfFBK1.ts.dt.date)
+    dfFBK1['Minute'] = dfFBK1.ts.dt.minute
+    dfFBK1['Ora'] = str(dfFBK1.ts.dt.time)
+
+    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t"], axis=1) #drop Temperature, humidity, pressure
+    dfFBK1ResV = dfFBK1ResV.reset_index()
+    dfFBK1ResV["Data"] = pd.to_datetime(dfFBK1ResV["Data"])
+    dfFBK1ResV = dfFBK1ResV.drop(["signal_res", "heater_res"], axis=1)
+    dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
+
+    fig = go.Figure()
+    fig.update_yaxes(type="log")
+    if(selected_period=="by hour" or selected_period == "by day"):
+        for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
+            fig.add_trace(go.Scatter(
+                x = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["ts"],
+                y = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["volt"],
+                name=SensingMaterial)
+            )
+    else:
+        for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
+            fig.add_trace(go.Scatter(
+                x = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["Data"],
+                y = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["volt"],
+                name=SensingMaterial),
+            )
+
+    fig.update_layout(legend_title_text="Sensing Material")
+    fig.update_yaxes(title_text="Value")
+
+    return fig
+
+@callback(Output("top_right_plot", "figure"),
+        Input("selected_period", "value"),
+        Input("selected_station", "value"),
+        )
+def update_top_right_plot(selected_period, selected_station):
+    dfFBK1 = pd.read_csv('FBK data/data_fbk_from_db.csv', encoding='windows-1252')
     #dfFBK1 = dfFBK1.dropna()
     dfFBK1 = dfFBK1[
-        dfFBK1["volt"] != pd.NA
+        dfFBK1["heater_res"] != pd.NA
     ]
-    dfFBK1 = dfFBK1.drop(["Unnamed: 0", "node_name", "g", "h",
-                         "th", "cfg", "iaq", "co2", "voc", "iac_comp"], axis=1)
+    dfFBK1=dfFBK1.drop(["Unnamed: 0", "node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"], axis=1)
 
     dfFBK1["signal_res"] = dfFBK1["signal_res"].astype(float)
     dfFBK1["heater_res"] = dfFBK1["heater_res"].astype(float)
@@ -183,62 +285,97 @@ def update_bottom_right_plot(selected_period, selected_station):
     dfFBK1["rh"] = dfFBK1["rh"].astype(float)
     dfFBK1["p"] = dfFBK1["p"].astype(float)
 
-    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description', 'ts'])
-
+    dfFBK1 = dfFBK1.drop_duplicates(['sensor_description','ts'])
+    
     dfFBK1['ts'] = pd.to_datetime(dfFBK1.ts)
     dfFBK1['Data'] = pd.to_datetime(dfFBK1.ts.dt.date)
     dfFBK1['Minute'] = dfFBK1.ts.dt.minute
     dfFBK1['Ora'] = str(dfFBK1.ts.dt.time)
 
-    # drop Temperature, humidity, pressure
-    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t"], axis=1)
-    dfFBK1ResV = dfFBK1ResV.groupby(["Data", "sensor_description"]).mean()
+    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t"], axis=1) #drop Temperature, humidity, pressure
     dfFBK1ResV = dfFBK1ResV.reset_index()
-
     dfFBK1ResV["Data"] = pd.to_datetime(dfFBK1ResV["Data"])
-    dfFBK1ResV = dfFBK1ResV.drop(["signal_res", "heater_res"], axis=1)
+    dfFBK1ResV = dfFBK1ResV.drop(["signal_res", "volt"], axis=1)
 
-    #dfFBK1ResV = verify_period(selected_period, dfFBK1ResV)
     fig = go.Figure()
-    for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
-        fig.add_trace(go.Scatter(
-            x=dfFBK1ResV[
-                dfFBK1ResV["sensor_description"] == SensingMaterial
-            ]["Data"],
-            y=dfFBK1ResV[
-                dfFBK1ResV["sensor_description"] == SensingMaterial
-            ]["volt"],
-            name=SensingMaterial)
-        )
+    if(selected_period=="by hour" or selected_period == "by day"):
+        for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
+            fig.add_trace(go.Scatter(
+                x = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["ts"],
+                y = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["heater_res"],
+                name=SensingMaterial)
+            )
+    else:
+        for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
+            fig.add_trace(go.Scatter(
+                x = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["Data"],
+                y = dfFBK1ResV[
+                    dfFBK1ResV["sensor_description"] == SensingMaterial
+                ]["heater_res"],
+                name=SensingMaterial)
+            )
 
     fig.update_layout(legend_title_text="Sensing Material")
     fig.update_yaxes(title_text="Value")
 
-    return (
-        fig,
-        update_middle_right_plot(
-            selected_period,
-            selected_station
-        )
-    )
+    return fig
 
-
-def verify_period(period, dfFBK1ResV):
-    # print(period)
-
+def verify_period(period, df):
     if period == "6 months":
-        dfFBK1ResV = dfFBK1ResV
-        dfFBK1ResV = dfFBK1ResV.reset_index()
-        return dfFBK1ResV
-    if period == "by month":
-        dfFBK1ResV = dfFBK1ResV
-        dfFBK1ResV = dfFBK1ResV.reset_index()
-        return dfFBK1ResV
-    if period == "by day":
-        dfFBK1ResV = dfFBK1ResV
-        dfFBK1ResV = dfFBK1ResV.reset_index()
-        return dfFBK1ResV
-    if period == "by hour":
-        dfFBK1ResV = dfFBK1ResV
-        dfFBK1ResV = dfFBK1ResV.reset_index()
-        return dfFBK1ResV
+        df = df.groupby(["Data", "sensor_description"]).mean()
+        df = df.reset_index()
+        df = df.set_index("Data")
+        df = df.last("180D")
+        df = df.reset_index()
+        return df
+    elif period == "by month":
+        df = df.groupby(["Data", "sensor_description"]).mean()
+        df = df.reset_index()
+        df = df.set_index("Data")
+        df = df.last("30D")
+        df = df.reset_index()
+        return df
+    elif period == "by day":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last('1D')
+        df = df.reset_index()
+        return df
+    elif period == "by hour":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last('1h')
+        df = df.reset_index()
+        return df
+
+def verify_period_TPH(period, df):
+    if period == "6 months":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("180D")
+        df = df.reset_index()
+        return df
+    elif period == "by month":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("30D")
+        df = df.reset_index()
+        return df
+    elif period == "by day":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last('1D')
+        df = df.reset_index()
+        return df
+    elif period == "by hour":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last('1h')
+        df = df.reset_index()
+        return df
