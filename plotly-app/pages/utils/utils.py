@@ -17,7 +17,6 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: the filtered dataframe
     """
     dataframe = dataframe.drop([
-        "Unnamed: 0",
         "node_name",
         "g",
         "h",
@@ -57,7 +56,9 @@ def get_fbk_data() -> pd.DataFrame:
         encoding='windows-1252'
     )
 
-    return filter_fbk_data(dataframe)
+    dataframe = filter_fbk_data(dataframe)
+    # Drop FBK csv column
+    return dataframe.drop(["Unnamed: 0"])
 
 def get_appa_data() -> pd.DataFrame:
     """

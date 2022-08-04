@@ -73,7 +73,7 @@ if __name__ == "__main__":
     else:
         # Production
         app.run_server(
-            port=8050,
+            port=8051,
             host='0.0.0.0',
             debug=False
         )
