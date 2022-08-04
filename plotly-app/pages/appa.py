@@ -98,9 +98,9 @@ def update_year_plot(selected_appa_station, selected_pollutant):
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     df_year = data.groupby([data.Data.dt.year, data.Data.dt.month]).mean()
-    df_year.index.names = ["Anno", "Month"]
+    df_year.index.names = ["Anno", "Mese"]
     df_year = df_year.reset_index()
-    fig = line_plot(df_year, "Month", "Valore", "Anno")
+    fig = line_plot(df_year, "Mese", "Valore", "Anno")
     return fig
 
 
@@ -116,12 +116,12 @@ def update_week_plot(selected_appa_station, selected_pollutant):
     data["Inverno"] = False
     data.loc[(data.Month >= 10) | (data.Month <= 3), "Inverno"] = True
     data = data.groupby(["Inverno", data.Data.dt.day_of_week]).mean()
-    data.index.names = ["Inverno", "Week day"]
+    data.index.names = ["Inverno", "Giorno della settimana"]
     data = data.reset_index()
 
     fig = px.bar(
         data,
-        x="Week day",
+        x="Giorno della settimana",
         y="Valore",
         color="Inverno",
         barmode="group"
@@ -140,9 +140,9 @@ def update_day_plot(selected_appa_station, selected_pollutant):
     data = filter_df(df, selected_appa_station, selected_pollutant)
 
     df_day = data.groupby(data.Data.dt.hour).mean()
-    df_day.index.names = ["Hour"]
+    df_day.index.names = ["Ora"]
     df_day = df_day.reset_index()
-    fig = line_plot(df_day, "Hour", "Valore")
+    fig = line_plot(df_day, "Ora", "Valore")
 
     return fig
 
