@@ -124,14 +124,14 @@ def update_resistance_plot(selected_period, selected_station):
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x = fbk_data_ResV[
+                    x=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["ts"],
-                    y = fbk_data_ResV[
+                    y=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["signal_res"],
-                    name = SensingMaterial,
-                    visible = "legendonly" if SensingMaterial == "SnO2" else True
+                    name=SensingMaterial,
+                    visible="legendonly" if SensingMaterial == "SnO2" else True
                 )
             )
     # use days as X axis
@@ -139,14 +139,14 @@ def update_resistance_plot(selected_period, selected_station):
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x = fbk_data_ResV[
+                    x=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["Data"],
-                    y = fbk_data_ResV[
+                    y=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["signal_res"],
-                    name = SensingMaterial,
-                    visible = "legendonly" if SensingMaterial == "SnO2" else True
+                    name=SensingMaterial,
+                    visible="legendonly" if SensingMaterial == "SnO2" else True
                 )
             )
 
@@ -298,13 +298,13 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x = dfFBK1ResV[
+                    x=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["ts"],
-                    y = dfFBK1ResV[
+                    y=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["volt"],
-                    name = SensingMaterial
+                    name=SensingMaterial
                 )
             )
     # use days as X axis
@@ -312,13 +312,13 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x = dfFBK1ResV[
+                    x=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["Data"],
-                    y = dfFBK1ResV[
+                    y=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["volt"],
-                    name = SensingMaterial
+                    name=SensingMaterial
                 ),
             )
 
@@ -360,13 +360,13 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x = dfFBK1ResV[
+                    x=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["ts"],
-                    y = dfFBK1ResV[
+                    y=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["heater_res"],
-                    name = SensingMaterial
+                    name=SensingMaterial
                 )
             )
     # use days as X axis
@@ -374,13 +374,13 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x = dfFBK1ResV[
+                    x=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["Data"],
-                    y = dfFBK1ResV[
+                    y=dfFBK1ResV[
                         dfFBK1ResV["sensor_description"] == SensingMaterial
                     ]["heater_res"],
-                    name = SensingMaterial
+                    name=SensingMaterial
                 )
             )
 
@@ -479,16 +479,16 @@ layout = html.Div([
                         'displaylogo': False,
                     }, style=dict(height="25vh")),
                     html.Div(
-                        style = dict(height="10px"),
-                        className = "transparent"
+                        style=dict(height="10px"),
+                        className="transparent"
                     ),
                     dcc.Graph(id="middle-right-plot", className="side-plot", config={
                         'displayModeBar': False,
                         'displaylogo': False,
                     }, style=dict(height="25vh")),
                     html.Div(
-                        style = dict(height="10px"),
-                        className = "transparent"
+                        style=dict(height="10px"),
+                        className="transparent"
                     ),
                     dcc.Graph(id="bottom-right-plot", className="side-plot", config={
                         'displayModeBar': False,
@@ -500,5 +500,5 @@ layout = html.Div([
         ],
     ),
 ],
-className="section fullHeight"
+    className="section fullHeight"
 )

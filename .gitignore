@@ -135,6 +135,5 @@ data_fbk_from_db.csv
 
 pokemon.csv
 plotly-app/other-pages
-plotly-app/data/
 images/
 plotly/pokemon.py

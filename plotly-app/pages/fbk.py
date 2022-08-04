@@ -26,9 +26,9 @@ df["O3_pred"] += np.random.rand(len(df)) * 10 - 5
 
 fbk_stations = ["Parco S. Chiara", "Via Bolzano"]
 pollutants = [
-    dict(label="Biossido di Azoto", value="NO2"),
-    dict(label="Ozono", value="O3"),
-    dict(label="Ossido di Carbonio", value="CO")
+    dict(label="Nitrogen Dioxide", value="NO2"),
+    dict(label="Ozone", value="O3"),
+    dict(label="Carbon Monoxide", value="CO")
 ]
 
 title = html.Div("Fitted FBK Data", className="header-title")
