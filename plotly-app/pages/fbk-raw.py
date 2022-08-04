@@ -89,8 +89,15 @@ dropdown_period = dcc.Dropdown(
     value=periods[4]
 )
 
+dropdown_wrapper = html.Div(
+    [
+        dropdown_station, dropdown_period
+    ],
+    className = "dropdownWrapper"
+)
+
 header = html.Div(
-    [title, dropdown_station, download_btn, download_it, dropdown_period],
+    [title, download_btn, download_it, dropdown_wrapper],
     className="section-header"
 )
 

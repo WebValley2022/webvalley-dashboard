@@ -80,3 +80,14 @@ html {
 .fullHeight {
   height: 100vh;
 }
+
+.dropdownWrapper {
+  display: flex;
+  flex-flow: row;
+  justify-content: space-around;
+  margin: 0 0 10px 0;
+}
+
+.dropdownWrapper > * {
+  width: 45%;
+}
