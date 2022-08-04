@@ -244,7 +244,7 @@ dropdown = dcc.Dropdown(
     value=stations[0]
 )
 download_btn = dbc.Button(
-    [html.I(className="fa-solid fa-download"), "Download full data"],
+    [html.I(className="fa-solid fa-download"), " Download full data"],
     color="primary",
     id="btn_appa",
     class_name="download-btn",

@@ -182,6 +182,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
 
     # filter for desired time span
     dfFBK1TPH = verify_period_TPH(selected_period, dfFBK1TPH)
+    dfFBK1TPH.sort_values(by = "ts", inplace = True)
 
     # Temperature graph
     trace1 = go.Scatter(
@@ -220,7 +221,12 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     fig.update_layout(
         margin=dict(l=0, r=5, t=0, b=0),
         plot_bgcolor="white",
-        font=dict(size=10)
+        font=dict(size=10),
+        yaxis2=dict(
+            title='Moddel Difference',
+            overlaying='y',
+            side='right'
+        )
     )
 
     fig.update_yaxes(fixedrange=True)
