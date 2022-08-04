@@ -28,6 +28,8 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
         "iac_comp"
     ], axis=1)
     dataframe["ts"]         = pd.to_datetime(dataframe["ts"])
+    # Set CEST Summer time zone
+    dataframe["ts"]         += pd.Timedelta(hours=2)
     dataframe["signal_res"] = dataframe["signal_res"].astype(float)
     dataframe["heater_res"] = dataframe["heater_res"].astype(float)
     dataframe["volt"]       = dataframe["volt"].astype(float)
