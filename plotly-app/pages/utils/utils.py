@@ -42,6 +42,9 @@ def get_fbk_data() -> pd.DataFrame:
 
     dataframe.drop_duplicates(['sensor_description','ts'], inplace = True)
 
+    dataframe["node_description"] = dataframe["node_description"].str.replace("Appa 1 - ", "")
+    dataframe["node_description"] = dataframe["node_description"].str.replace("Appa 2 - ", "")
+
     return dataframe
 
 def get_appa_data() -> pd.DataFrame:

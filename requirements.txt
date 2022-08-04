@@ -9,3 +9,4 @@ soupsieve
 bs4
 sklearn
 psycopg2
+gunicorn
