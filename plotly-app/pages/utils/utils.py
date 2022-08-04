@@ -6,18 +6,16 @@ FBK_FILE_PATH        = "../../../FBK data/data_fbk_from_db.csv"
 APPA_FILE_PATH       = "../../data/21_22_APPA.csv"
 PREDICTION_FILE_PATH = "../../data/appa1_predictions.csv"
 
-def get_fbk_data() -> pd.DataFrame:
+def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
-    Fetches the fbk local csv, filters it and returns it
+    Filters the data given as input
+
+    Args:
+        dataframe (pd.DataFrame): the starting dataframe
 
     Returns:
-        pd.DataFrame: the dataframe
+        pd.DataFrame: the filtered dataframe
     """
-    dataframe = pd.read_csv(
-        os.path.join(os.path.dirname(__file__), FBK_FILE_PATH),
-        encoding='windows-1252'
-    )
-
     dataframe = dataframe.drop([
         "Unnamed: 0",
         "node_name",
@@ -46,6 +44,20 @@ def get_fbk_data() -> pd.DataFrame:
     dataframe["node_description"] = dataframe["node_description"].str.replace("Appa 2 - ", "")
 
     return dataframe
+
+def get_fbk_data() -> pd.DataFrame:
+    """
+    Fetches the fbk local csv, filters it and returns it
+
+    Returns:
+        pd.DataFrame: the dataframe
+    """
+    dataframe = pd.read_csv(
+        os.path.join(os.path.dirname(__file__), FBK_FILE_PATH),
+        encoding='windows-1252'
+    )
+
+    return filter_fbk_data(dataframe)
 
 def get_appa_data() -> pd.DataFrame:
     """

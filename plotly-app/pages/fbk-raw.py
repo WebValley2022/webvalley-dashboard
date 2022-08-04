@@ -49,7 +49,7 @@ else:
     start = datetime.now()
     fbk_data = load_data_from_psql(query)
     logging.info("Query time", datetime.now() - start)
-    # df.to_csv("data_fbk_from_db.csv")
+    fbk_data = utils.filter_fbk_data(fbk_data)
 
 title = html.Div("Raw FBK Data", className="header-title")
 
