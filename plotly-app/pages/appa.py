@@ -187,15 +187,16 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
 
     # make month average of data
     df_year = data.groupby(
-        [data.Date.dt.year, data.Date.dt.month_name()]).mean()
-    df_year.index.names = ["Year", "Month"]
+        [data.Date.dt.year, data.Date.dt.month_name(), data.Date.dt.month]).mean()
+    df_year.index.names = ["Year", "Month", "Month_num"]
     df_year = df_year.reset_index()
 
     # set the ordering (e.g. January < February) for the column 'Month'
-    df_year["Month"] = pd.Categorical(df_year["Month"], categories = MONTHS, ordered = True)
+    df_year["Month"] = pd.Categorical(
+        df_year["Month"], categories=MONTHS, ordered=True)
 
     # sort the values based on the ordering given before
-    df_year.sort_values("Month", inplace = True)
+    df_year.sort_values("Month_num", inplace=True)
 
     fig = line_plot(
         df_year,
