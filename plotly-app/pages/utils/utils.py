@@ -38,7 +38,7 @@ def get_fbk_data() -> pd.DataFrame:
     dataframe["t"]          = dataframe["t"].astype(float)
     dataframe["rh"]         = dataframe["rh"].astype(float)
 
-    dataframe['sensor_description'] = dataframe['sensor_description'].str.split(pat="_").str.get(1)
+    dataframe['sensor_description'] = dataframe['sensor_description'].str.split(pat="_").str.get(0)
 
     dataframe.drop_duplicates(['sensor_description','ts'], inplace = True)
 
