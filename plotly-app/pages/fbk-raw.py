@@ -14,8 +14,10 @@ import os
 # SECTION 1 PAGE #
 ##################
 
-# dash.register_page(__name__, redirect_from=["/"])
-dash.register_page(__name__)
+dash.register_page(
+    __name__,
+    path="/"
+)
 
 if os.getenv("DEBUG"):
     fbk_data = utils.get_fbk_data()

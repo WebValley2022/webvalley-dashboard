@@ -24,7 +24,7 @@ sidebar = html.Div(
             [
                 dbc.NavLink(
                     "Raw FBK Data",
-                    href="/fbk-raw",
+                    href="/",
                     active="exact",
                     class_name="sidebar-link",
                 ),
