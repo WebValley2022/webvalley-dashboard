@@ -151,12 +151,13 @@ def update_resistance_plot(selected_period, selected_station):
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
-        title={
-            "x": 0.5,
-            "text": "Sensor Resistance (Ω)",
-            "xanchor": "center",
-            "yanchor": "top",
-        },
+        title=dict(
+            x=0.5,
+            text="Sensor Resistance (Ω)",
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif"
+        ),
     )
     fig.update_yaxes(title_text="", fixedrange=True)
     return fig
@@ -248,13 +249,14 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
             "orientation": "h",
             "bgcolor": "rgba(0,0,0,0)",
         },
-        title={
-            "x": 0.5,
-            "y": 0.95,
-            "text": "Bosch sensor",
-            "xanchor": "center",
-            "yanchor": "top",
-        }
+        title=dict(
+            x=0.5,
+            y=0.95,
+            text="Bosch sensor",
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif"
+        )
     )
 
     fig.update_yaxes(fixedrange=True)
@@ -332,12 +334,13 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
         font=dict(size=10),
-        title={
-            "x": 0.5,
-            "text": "Heater Voltage (V)",
-            "xanchor": "center",
-            "yanchor": "top",
-        },
+        title=dict(
+            x=0.5,
+            text="Heater Voltage (V)",
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif"
+        )
     )
     fig.update_yaxes(title_text="", fixedrange=True)
 
@@ -409,12 +412,13 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
         font=dict(size=10),
-        title={
-            "x": 0.5,
-            "text": "Heater Resistance (Ω)",
-            "xanchor": "center",
-            "yanchor": "top",
-        },
+        title=dict(
+            x=0.5,
+            text="Heater Resistance (Ω)",
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif"
+        )
     )
     fig.update_yaxes(title_text="", fixedrange=True)
 

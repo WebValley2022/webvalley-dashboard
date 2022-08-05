@@ -73,7 +73,8 @@ gas_btns = html.Div(
 )
 
 header = html.Div(
-    [title, dropdown, download_btn, download_it, gas_btns], className="section-header"
+    [title, dropdown, download_btn, download_it,
+        gas_btns], className="section-header"
 )
 
 graph_selectors = html.Div(
@@ -83,7 +84,8 @@ graph_selectors = html.Div(
                 "Display: ",
                 dcc.Dropdown(
                     id="selected-period",
-                    options=["last 24h", "last week", "last month", "last year", "all"],
+                    options=["last 24h", "last week",
+                             "last month", "last year", "all"],
                     className="dropdown",
                     value="last week",
                 ),
@@ -178,12 +180,12 @@ def update_comparison_graph(
     fig.update_layout(
         margin=dict(l=5, r=5, t=20, b=0),
         plot_bgcolor="white",
-        title={
-            "x": 0.5,
-            "text": title,
-            "xanchor": "center",
-            "yanchor": "top",
-        },
+        title=dict(
+            x=0.5,
+            text=title,
+            font_family="Sans serif",
+            xanchor="center",
+            yanchor="top"),
     )
     fig.update_yaxes(title_text="Value", fixedrange=True)
 
@@ -206,7 +208,8 @@ def get_mean(
     Returns:
         pd.DataFrame: the dataframe with the mean values
     """
-    pollutants = {"Biossido di Azoto": "NO2", "Ozono": "O3", "Ossido di Carbonio": "CO"}
+    pollutants = {"Biossido di Azoto": "NO2",
+                  "Ozono": "O3", "Ossido di Carbonio": "CO"}
 
     pollutant_real = selected_pollutant + "_real"
     pollutant_pred = selected_pollutant + "_pred"
@@ -238,7 +241,8 @@ def get_mean(
     else:
         time_span = "W"
 
-    mean_temp = mean_temp.groupby(by=pd.Grouper(key="Time", freq=time_span)).mean()
+    mean_temp = mean_temp.groupby(
+        by=pd.Grouper(key="Time", freq=time_span)).mean()
     # mean_temp.insert(1, "Inquinante", pollutant)
     # mean_temp.insert(1, "Stazione", station)
     mean_temp.reset_index(inplace=True)
