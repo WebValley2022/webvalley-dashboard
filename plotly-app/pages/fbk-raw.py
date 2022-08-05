@@ -14,10 +14,7 @@ import os
 # SECTION 1 PAGE #
 ##################
 
-dash.register_page(
-    __name__,
-    path="/"
-)
+dash.register_page(__name__, path="/")
 
 if os.getenv("DEBUG"):
     fbk_data = utils.get_fbk_data()
@@ -59,10 +56,7 @@ periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
 stations = ["Trento - S. Chiara", "Trento - via Bolzano"]
 
 dropdown_station = dcc.Dropdown(
-    stations,
-    id="selected-station",
-    className="dropdown",
-    value=stations[0]
+    stations, id="selected-station", className="dropdown", value=stations[0]
 )
 
 download_btn = dbc.Button(
@@ -85,22 +79,15 @@ def create_download_file(n_clicks):
 
 
 dropdown_period = dcc.Dropdown(
-    periods,
-    id="selected-period",
-    className="dropdown",
-    value=periods[4]
+    periods, id="selected-period", className="dropdown", value=periods[4]
 )
 
 dropdown_wrapper = html.Div(
-    [
-        dropdown_station, dropdown_period
-    ],
-    className = "dropdownWrapper"
+    [dropdown_station, dropdown_period], className="dropdownWrapper"
 )
 
 header = html.Div(
-    [title, download_btn, download_it, dropdown_wrapper],
-    className="section-header"
+    [title, download_btn, download_it, dropdown_wrapper], className="section-header"
 )
 
 
@@ -112,16 +99,15 @@ header = html.Div(
 def update_resistance_plot(selected_period, selected_station):
     # filter only valid values
     fbk_data_ResV = fbk_data[
-        (fbk_data["node_description"] == selected_station.split(" - ")[-1]) &
-        (fbk_data["signal_res"] != pd.NA)
+        (fbk_data["node_description"] == selected_station.split(" - ")[-1])
+        & (fbk_data["signal_res"] != pd.NA)
     ]
 
     # convert date to datetime
-    fbk_data_ResV['Data'] = pd.to_datetime(fbk_data_ResV.ts.dt.date)
+    fbk_data_ResV["Data"] = pd.to_datetime(fbk_data_ResV.ts.dt.date)
 
     # keep signal_resistance drop Temperature, humidity, pressure, voltage and heater resistance
-    fbk_data_ResV = fbk_data_ResV.drop(
-        ["p", "rh", "t", "volt", "heater_res"], axis=1)
+    fbk_data_ResV = fbk_data_ResV.drop(["p", "rh", "t", "volt", "heater_res"], axis=1)
     fbk_data_ResV = fbk_data_ResV.reset_index()
 
     # filter for desired time span
@@ -140,7 +126,7 @@ def update_resistance_plot(selected_period, selected_station):
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["signal_res"],
                     name=SensingMaterial,
-                    visible="legendonly" if SensingMaterial == "SnO2" else True
+                    visible="legendonly" if SensingMaterial == "SnO2" else True,
                 )
             )
     # use days as X axis
@@ -155,17 +141,23 @@ def update_resistance_plot(selected_period, selected_station):
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["signal_res"],
                     name=SensingMaterial,
-                    visible="legendonly" if SensingMaterial == "SnO2" else True
+                    visible="legendonly" if SensingMaterial == "SnO2" else True,
                 )
             )
 
-    #fig.update_yaxes(type="log", range=[1, 3])
+    # fig.update_yaxes(type="log", range=[1, 3])
     fig.update_layout(
         legend_title_text="Sensing Material",
-        margin=dict(l=0, r=5, t=0, b=0),
-        plot_bgcolor="white"
+        margin=dict(l=0, r=5, t=20, b=0),
+        plot_bgcolor="white",
+        title={
+            "x": 0.5,
+            "text": "Sensor Resistance",
+            "xanchor": "center",
+            "yanchor": "top",
+        },
     )
-    fig.update_yaxes(title_text="Value", fixedrange=True)
+    fig.update_yaxes(title_text="Value (Ω)", fixedrange=True)
     return fig
 
 
@@ -196,8 +188,11 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
     dfFBK1TPH = dfFBK1.drop(["heater_res", "signal_res", "volt"], axis=1)
-    dfFBK1TPH = dfFBK1TPH.groupby(
-        ["sensor_description", "node_description"]).resample("1T", on="ts").mean()
+    dfFBK1TPH = (
+        dfFBK1TPH.groupby(["sensor_description", "node_description"])
+        .resample("1T", on="ts")
+        .mean()
+    )
     dfFBK1TPH = dfFBK1TPH.reset_index()
 
     # filter for desired time span
@@ -211,7 +206,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
         name="Temperature",
         mode="lines",
         yaxis="y1",
-        hovertemplate="Parameter = Temperature<br>Value = %{y}<br>Date = %{x}<extra></extra>"
+        hovertemplate="Parameter = Temperature<br>Value = %{y}<br>Date = %{x}<extra></extra>",
     )
 
     # Humidity graph
@@ -221,7 +216,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
         name="Humidity",
         mode="lines",
         yaxis="y1",
-        hovertemplate="Parameter = Humidity<br>Value = %{y}<br>Date = %{x}<extra></extra>"
+        hovertemplate="Parameter = Humidity<br>Value = %{y}<br>Date = %{x}<extra></extra>",
     )
 
     # Pressure graph
@@ -231,7 +226,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
         name="Pressure",
         yaxis="y2",
         mode="lines",
-        hovertemplate="Parameter = Pressure<br>Value = %{y}<br>Date = %{x}<extra></extra>"
+        hovertemplate="Parameter = Pressure<br>Value = %{y}<br>Date = %{x}<extra></extra>",
     )
 
     data = [trace1, trace2, trace3]
@@ -239,25 +234,13 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     fig = go.Figure(data=data)
 
     fig.update_layout(
-        margin=dict(l=0, r=5, t=10, b=10),
+        margin=dict(l=0, r=5, t=50, b=10),
         plot_bgcolor="white",
         font=dict(size=10),
-        yaxis=dict(
-            title="temperature & humidity"
-        ),
-        yaxis2=dict(
-            title='pressure',
-            overlaying='y',
-            side='right'
-        ),
-        legend={
-            "x": 1,
-            "y": 1,
-            "yanchor": "bottom",
-            "xanchor": "right",
-            "orientation": "h",
-            "bgcolor": "white",
-        }
+        yaxis=dict(title="Temp (°C) & RH (%)"),
+        yaxis2=dict(title="pressure (psi)", overlaying="y", side="right"),
+        legend={"y": 1.02, "yanchor": "top", "xanchor": "right", "orientation": "h"},
+        title={"x": 0.5, "text": "Bosch sensor", "xanchor": "center", "yanchor": "top"},
     )
 
     fig.update_yaxes(fixedrange=True)
@@ -282,9 +265,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
         go.Figure: the plot
     """
 
-    dfFBK1 = fbk_data[
-        fbk_data["node_description"] == selected_station.split(" - ")[-1]
-    ]
+    dfFBK1 = fbk_data[fbk_data["node_description"] == selected_station.split(" - ")[-1]]
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["volt"] != pd.NA]
@@ -292,8 +273,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
     # drop Temperature, humidity, pressure
-    dfFBK1ResV = dfFBK1.drop(
-        ["p", "rh", "t", "signal_res", "heater_res"], axis=1)
+    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t", "signal_res", "heater_res"], axis=1)
     dfFBK1ResV = dfFBK1ResV.reset_index()
 
     # filter for desired time span
@@ -307,13 +287,13 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["ts"],
-                    y=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["volt"],
-                    name=SensingMaterial
+                    x=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "ts"
+                    ],
+                    y=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "volt"
+                    ],
+                    name=SensingMaterial,
                 )
             )
     # use days as X axis
@@ -321,23 +301,29 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["Data"],
-                    y=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["volt"],
-                    name=SensingMaterial
+                    x=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "Data"
+                    ],
+                    y=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "volt"
+                    ],
+                    name=SensingMaterial,
                 ),
             )
 
     fig.update_layout(
         legend_title_text="Sensing Material",
-        margin=dict(l=0, r=5, t=0, b=0),
+        margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
-        font=dict(size=10)
+        font=dict(size=10),
+        title={
+            "x": 0.5,
+            "text": "Heater Voltage",
+            "xanchor": "center",
+            "yanchor": "top",
+        },
     )
-    fig.update_yaxes(title_text="Value", fixedrange=True)
+    fig.update_yaxes(title_text="Value (volt)", fixedrange=True)
 
     return fig
 
@@ -348,9 +334,17 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     Input("selected-station", "value"),
 )
 def update_top_right_plot(selected_period: str, selected_station: str) -> go.Figure:
-    dfFBK1 = fbk_data[
-        fbk_data["node_description"] == selected_station.split(" - ")[-1]
-    ]
+    """
+    Updates the plot representing the change of the heater resistance over  time
+
+    Args:
+        selected_period (str): the selected period to show
+        selected_station (str): the selected station to show
+
+    Returns:
+        go.Figure: the plot
+    """
+    dfFBK1 = fbk_data[fbk_data["node_description"] == selected_station.split(" - ")[-1]]
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["heater_res"] != pd.NA]
@@ -369,13 +363,13 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["ts"],
-                    y=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["heater_res"],
-                    name=SensingMaterial
+                    x=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "ts"
+                    ],
+                    y=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "heater_res"
+                    ],
+                    name=SensingMaterial,
                 )
             )
     # use days as X axis
@@ -383,21 +377,29 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
-                    x=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["Data"],
-                    y=dfFBK1ResV[
-                        dfFBK1ResV["sensor_description"] == SensingMaterial
-                    ]["heater_res"],
-                    name=SensingMaterial
+                    x=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "Data"
+                    ],
+                    y=dfFBK1ResV[dfFBK1ResV["sensor_description"] == SensingMaterial][
+                        "heater_res"
+                    ],
+                    name=SensingMaterial,
                 )
             )
 
-    fig.update_layout(legend_title_text="Sensing Material",
-                      margin=dict(l=0, r=5, t=0, b=0),
-                      plot_bgcolor="white",
-                      font=dict(size=10))
-    fig.update_yaxes(title_text="Value", fixedrange=True)
+    fig.update_layout(
+        legend_title_text="Sensing Material",
+        margin=dict(l=0, r=5, t=20, b=0),
+        plot_bgcolor="white",
+        font=dict(size=10),
+        title={
+            "x": 0.5,
+            "text": "Heater Resistance",
+            "xanchor": "center",
+            "yanchor": "top",
+        },
+    )
+    fig.update_yaxes(title_text="Value (Ω)", fixedrange=True)
 
     return fig
 
@@ -412,13 +414,9 @@ def verify_period(period, df):
         return df
     elif period == "last month":
         # make hour average
-        df = df.groupby([
-            pd.Grouper(
-                key="ts",
-                freq="1H"
-            ),
-            pd.Grouper("sensor_description")
-        ]).mean()
+        df = df.groupby(
+            [pd.Grouper(key="ts", freq="1H"), pd.Grouper("sensor_description")]
+        ).mean()
         df = df.reset_index()
         df = df.set_index("ts")
         df = df.last("30D")
@@ -426,13 +424,9 @@ def verify_period(period, df):
         return df
     elif period == "last week":
         # make hour average
-        df = df.groupby([
-            pd.Grouper(
-                key="ts",
-                freq="1H"
-            ),
-            pd.Grouper("sensor_description")
-        ]).mean()
+        df = df.groupby(
+            [pd.Grouper(key="ts", freq="1H"), pd.Grouper("sensor_description")]
+        ).mean()
         df = df.reset_index()
         df = df.set_index("ts")
         df = df.last("7D")
@@ -487,42 +481,60 @@ def verify_period_TPH(period, df):
     return df
 
 
-layout = html.Div([
-    header,
-    dbc.Row(
-        [
-            dbc.Col(dcc.Graph(id="resistance-plot", config={
-                    'displayModeBar': False,
-                    'displaylogo': False,
-                    }, style=dict(height="77vh")
-            ), lg=7, xl=8),
-            dbc.Col(
-                [
-                    dcc.Graph(id="top-right-plot", config={
-                        'displayModeBar': False,
-                        'displaylogo': False,
-                    }, style=dict(height="25vh")),
-                    html.Div(
-                        style=dict(height="1vh"),
-                        className="transparent"
+layout = html.Div(
+    [
+        header,
+        dbc.Row(
+            [
+                dbc.Col(
+                    dcc.Graph(
+                        id="resistance-plot",
+                        config={
+                            "displayModeBar": False,
+                            "displaylogo": False,
+                        },
+                        style=dict(height="77vh"),
                     ),
-                    dcc.Graph(id="middle-right-plot", className="side-plot", config={
-                        'displayModeBar': False,
-                        'displaylogo': False,
-                    }, style=dict(height="25vh")),
-                    html.Div(
-                        style=dict(height="1vh"),
-                        className="transparent"
-                    ),
-                    dcc.Graph(id="bottom-right-plot", className="side-plot", config={
-                        'displayModeBar': False,
-                        'displaylogo': False,
-                    }, style=dict(height="25vh"))
-                ],
-                md=5, lg=5, xl=4
-            ),
-        ],
-    ),
-],
-    className="section fullHeight"
+                    lg=7,
+                    xl=8,
+                ),
+                dbc.Col(
+                    [
+                        dcc.Graph(
+                            id="top-right-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="25vh"),
+                        ),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        dcc.Graph(
+                            id="bottom-right-plot",
+                            className="side-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="25vh"),
+                        ),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        dcc.Graph(
+                            id="middle-right-plot",
+                            className="side-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="25vh"),
+                        ),
+                    ],
+                    md=5,
+                    lg=5,
+                    xl=4,
+                ),
+            ],
+        ),
+    ],
+    className="section fullHeight",
 )
