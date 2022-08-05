@@ -16,7 +16,14 @@ app = Dash(
 sidebar = html.Div(
     [
         html.Div(
-            [html.Img(src="/assets/img/logo.png", className="sidebar-img")],
+            [
+                html.A(
+                    href="/",
+                    children=[
+                        html.Img(src="/assets/img/logo.png", className="sidebar-img")
+                    ],
+                ),
+            ],
             className="sidebar-img-div",
         ),
         html.Hr(),
