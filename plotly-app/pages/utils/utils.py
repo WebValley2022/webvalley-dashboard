@@ -60,7 +60,7 @@ def get_fbk_data() -> pd.DataFrame:
 
     dataframe = filter_fbk_data(dataframe)
     # Drop FBK csv column
-    return dataframe.drop(["Unnamed: 0"])
+    return dataframe.drop(["Unnamed: 0"], axis = 1)
 
 def get_appa_data() -> pd.DataFrame:
     """
