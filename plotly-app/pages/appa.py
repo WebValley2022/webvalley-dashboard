@@ -12,10 +12,18 @@ import dash
 import os
 
 MONTHS = [
-    "January", "February", "March",
-    "April", "May", "June",
-    "July", "August", "September",
-    "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 ]
 
 dash.register_page(__name__)
@@ -34,23 +42,28 @@ else:
     start = datetime.now()
     df = load_data_from_psql(query)
     logging.info("Query time", datetime.now() - start)
-    df = df.rename({
-        "stazione": "Station",
-        "inquinante": "Pollutant",
-        "ts": "Date",
-        "valore": "Value",
-    }, axis=1)
+    df = df.rename(
+        {
+            "stazione": "Station",
+            "inquinante": "Pollutant",
+            "ts": "Date",
+            "valore": "Value",
+        },
+        axis=1,
+    )
 
 # keep only rows with a value that's not NA
 df = df[df.Value != "n.d."]
 
 df["Date"] = pd.to_datetime(df["Date"])
-df.Pollutant = df.Pollutant.replace({
-    "Biossido di Azoto": "Nitrogen Dioxide",
-    "Ozono": "Ozone",
-    "Ossido di Carbonio": "Carbon Monoxide",
-    "Biossido Zolfo": "Sulfure Dioxide"
-})
+df.Pollutant = df.Pollutant.replace(
+    {
+        "Biossido di Azoto": "Nitrogen Dioxide",
+        "Ozono": "Ozone",
+        "Ossido di Carbonio": "Carbon Monoxide",
+        "Biossido Zolfo": "Sulfure Dioxide",
+    }
+)
 stations = df.Station.unique()
 
 
@@ -66,13 +79,17 @@ def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: the filtered dataframe
     """
-    return df[
-        (df.Station == station) &
-        (df.Pollutant == pollutant)
-    ]
+    return df[(df.Station == station) & (df.Pollutant == pollutant)]
 
 
-def line_plot(df: pd.DataFrame, x: str, y: str, title: str, title_size: int = 14, color: str = None) -> go.Figure:
+def line_plot(
+    df: pd.DataFrame,
+    x: str,
+    y: str,
+    title: str,
+    title_size: int = 14,
+    color: str = None,
+) -> go.Figure:
     """
     Generates a line plot based on the dataframe, x and y given
 
@@ -85,31 +102,36 @@ def line_plot(df: pd.DataFrame, x: str, y: str, title: str, title_size: int = 14
     Returns:
         go.Figure: the line plot
     """
-    fig = px.line(df,
-                  x=x,
-                  y=y,
-                  color=color)
+    fig = px.line(df, x=x, y=y, color=color)
 
-    fig.update_layout(margin=dict(l=0, r=5, t=30, b=0),
-                      plot_bgcolor="white",
-                      title=dict(text=title,
-                                 x=0.5,
-                                 xanchor="center",
-                                 yanchor="top",
-                                 font_family="Sans serif",
-                                 font_size=title_size))
-    fig.update_yaxes(showline=True, linewidth=1,
-                     linecolor="#003E9A", fixedrange=True,
-                     title_font_size=12)
-    fig.update_xaxes(showline=True, linewidth=1,
-                     linecolor="#003E9A", title_font_size=12)
+    fig.update_layout(
+        margin=dict(l=0, r=5, t=30, b=0),
+        plot_bgcolor="white",
+        title=dict(
+            text=title,
+            x=0.5,
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif",
+            font_size=title_size,
+        ),
+    )
+    fig.update_yaxes(
+        showline=True,
+        linewidth=1,
+        linecolor="#003E9A",
+        fixedrange=True,
+        title_font_size=12,
+    )
+    fig.update_xaxes(
+        showline=True, linewidth=1, linecolor="#003E9A", title_font_size=12
+    )
 
     return fig
 
 
 @callback(
-    Output("appa-pollutants", "children"),
-    Input("selected-appa-station", "value")
+    Output("appa-pollutants", "children"), Input("selected-appa-station", "value")
 )
 def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
     """
@@ -137,14 +159,14 @@ def get_pollutants(selected_appa_station: str) -> dbc.RadioItems:
         label_class_name="btn btn-outline-primary",
         label_checked_class_name="active",
         options=pollutants_list,
-        value="Nitrogen Dioxide"
+        value="Nitrogen Dioxide",
     )
 
 
 @callback(
     Output("main-plot", "figure"),
     Input("selected-appa-station", "value"),
-    Input("selected-pollutant", "value")
+    Input("selected-pollutant", "value"),
 )
 def update_main_plot(selected_appa_station: str, selected_pollutant: str) -> go.Figure:
     """
@@ -162,15 +184,16 @@ def update_main_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     # make week average of data
     data_resampled = data.resample("W", on="Date").mean()
     data_resampled = data_resampled.reset_index()
-    fig = line_plot(data_resampled, "Date", "Value",
-                    title="Weekly mean over time", title_size=18)
+    fig = line_plot(
+        data_resampled, "Date", "Value", title="Weekly mean over time", title_size=18
+    )
     return fig
 
 
 @callback(
     Output("year-plot", "figure"),
     Input("selected-appa-station", "value"),
-    Input("selected-pollutant", "value")
+    Input("selected-pollutant", "value"),
 )
 def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.Figure:
     """
@@ -187,24 +210,18 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
 
     # make month average of data
     df_year = data.groupby(
-        [data.Date.dt.year, data.Date.dt.month_name(), data.Date.dt.month]).mean()
+        [data.Date.dt.year, data.Date.dt.month_name(), data.Date.dt.month]
+    ).mean()
     df_year.index.names = ["Year", "Month", "Month_num"]
     df_year = df_year.reset_index()
 
     # set the ordering (e.g. January < February) for the column 'Month'
-    df_year["Month"] = pd.Categorical(
-        df_year["Month"], categories=MONTHS, ordered=True)
+    df_year["Month"] = pd.Categorical(df_year["Month"], categories=MONTHS, ordered=True)
 
     # sort the values based on the ordering given before
     df_year.sort_values("Month_num", inplace=True)
 
-    fig = line_plot(
-        df_year,
-        "Month",
-        "Value",
-        color="Year",
-        title="Year comparison"
-    )
+    fig = line_plot(df_year, "Month", "Value", color="Year", title="Year comparison")
     fig.update_xaxes(title_text="")
     return fig
 
@@ -212,7 +229,7 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
 @callback(
     Output("week-plot", "figure"),
     Input("selected-appa-station", "value"),
-    Input("selected-pollutant", "value")
+    Input("selected-pollutant", "value"),
 )
 def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.Figure:
     """
@@ -235,46 +252,53 @@ def update_week_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     data.loc[(data.Month >= 10) | (data.Month <= 3), "Season"] = "Winter"
 
     # make daily average of pollutant level
-    data = data.groupby(["Season", data.Date.dt.day_name(),
-                        data.Date.dt.day_of_week]).mean()
+    data = data.groupby(
+        ["Season", data.Date.dt.day_name(), data.Date.dt.day_of_week]
+    ).mean()
     data.index.names = ["Season", "Weekday", "Weekday_num"]
     data = data.reset_index()
     data = data.sort_values("Weekday_num")
 
     # draw main bar plot
-    fig = px.bar(
-        data,
-        x="Weekday",
-        y="Value",
-        color="Season",
-        barmode="group"
+    fig = px.bar(data, x="Weekday", y="Value", color="Season", barmode="group")
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=18, b=0),
+        plot_bgcolor="white",
+        title=dict(
+            text="Weekday avg",
+            x=0.5,
+            y=0.95,
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif",
+            font_size=14,
+        ),
+        legend_title_text="",
     )
-    fig.update_layout(margin=dict(l=0, r=0, t=18, b=0),
-                      plot_bgcolor="white",
-                      title=dict(text="Weekday avg",
-                                 x=0.5,
-                                 y=0.95,
-                                 xanchor="center",
-                                 yanchor="top",
-                                 font_family="Sans serif",
-                                 font_size=14),
-                      legend_title_text="")
-    fig.update_yaxes(showline=True, linewidth=1,
-                     linecolor="#003E9A", fixedrange=True,
-                     title_font_family="Sans serif", title_font_size=12)
-    fig.update_xaxes(showline=True, linewidth=1, title_text="",
-                     linecolor="#003E9A", title_font_family="Sans serif",
-                     title_font_size=12)
+    fig.update_yaxes(
+        showline=True,
+        linewidth=1,
+        linecolor="#003E9A",
+        fixedrange=True,
+        title_font_family="Sans serif",
+        title_font_size=12,
+    )
+    fig.update_xaxes(
+        showline=True,
+        linewidth=1,
+        title_text="",
+        linecolor="#003E9A",
+        title_font_family="Sans serif",
+        title_font_size=12,
+    )
 
     return fig
 
 
-@ callback(
+@callback(
     Output("day-plot", "figure"),
     Input("selected-appa-station", "value"),
-    Input("selected-pollutant", "value")
-
-
+    Input("selected-pollutant", "value"),
 )
 def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.Figure:
     """
@@ -300,10 +324,7 @@ def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.F
 
 title = html.Div("APPA Data", className="header-title")
 dropdown = dcc.Dropdown(
-    stations,
-    id="selected-appa-station",
-    className="dropdown",
-    value=stations[0]
+    stations, id="selected-appa-station", className="dropdown", value=stations[0]
 )
 download_btn = dbc.Button(
     [html.I(className="fa-solid fa-download"), " Download full data"],
@@ -324,66 +345,64 @@ def create_download_file(n_clicks):
     return dcc.send_data_frame(df.to_csv, "appa_data.csv")
 
 
-gas_btns = html.Div(
-    id="appa-pollutants",
-    className="radio-group"
-)
+gas_btns = html.Div(id="appa-pollutants", className="radio-group")
 
 header = html.Div(
-    [title, dropdown, download_btn, download_it, gas_btns],
-    className="section-header"
+    [title, dropdown, download_btn, download_it, gas_btns], className="section-header"
 )
 
 layout = html.Div(
     [
         header,
-        dbc.Row([
-            dbc.Col(
-                dcc.Graph(
-                    id="main-plot",
-                    config={
-                        'displayModeBar': False,
-                        'displaylogo': False,
-                    },
-                    style=dict(height="70vh")
+        dbc.Row(
+            [
+                dbc.Col(
+                    dcc.Graph(
+                        id="main-plot",
+                        config={
+                            "displayModeBar": False,
+                            "displaylogo": False,
+                        },
+                        style=dict(height="70vh"),
+                    ),
+                    lg=7,
+                    xl=8,
                 ),
-                lg=7,
-                xl=8
-            ),
-            dbc.Col(
-                [
-                    dcc.Graph(
-                        id="year-plot",
-                        config={
-                            'displayModeBar': False,
-                            'displaylogo': False,
-                        },
-                        style=dict(height="30vh"),
-                    ),
-                    dcc.Graph(
-                        id="week-plot",
-                        className="side-plot",
-                        config={
-                            'displayModeBar': False,
-                            'displaylogo': False,
-                        },
-                        style=dict(height="20vh")
-                    ),
-                    dcc.Graph(
-                        id="day-plot",
-                        className="side-plot",
-                        config={
-                            'displayModeBar': False,
-                            'displaylogo': False,
-                        },
-                        style=dict(height="20vh")
-                    )
-                ],
-                md=5,
-                lg=5,
-                xl=4
-            ),
-        ]),
+                dbc.Col(
+                    [
+                        dcc.Graph(
+                            id="year-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="30vh"),
+                        ),
+                        dcc.Graph(
+                            id="week-plot",
+                            className="side-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="20vh"),
+                        ),
+                        dcc.Graph(
+                            id="day-plot",
+                            className="side-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="20vh"),
+                        ),
+                    ],
+                    md=5,
+                    lg=5,
+                    xl=4,
+                ),
+            ]
+        ),
     ],
-    className="section fullHeight"
+    className="section fullHeight",
 )
