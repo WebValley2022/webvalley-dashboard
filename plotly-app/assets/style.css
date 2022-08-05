@@ -14,28 +14,6 @@ html {
   height: 100%;
 }
 
-.sidebar {
-  background-color: #fff;
-  padding-top: 2%;
-}
-
-.sidebar-img-div {
-  width: 100%;
-}
-
-.sidebar-img {
-  display: block;
-  width: 70%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.sidebar-link {
-  font-size: 13px;
-  font-weight: 600;
-  margin: 0.5rem 0;
-}
-
 .btn {
   border-radius: 10px;
 }

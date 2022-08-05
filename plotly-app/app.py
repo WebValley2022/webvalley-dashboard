@@ -16,8 +16,8 @@ app = Dash(
 sidebar = html.Div(
     [
         html.Div(
-            [html.Img(src="/assets/img/fbk-logo.png", className="sidebar-img")],
-            # className="sidebar-img-div",
+            [html.Img(src="/assets/img/logo.png", className="sidebar-img")],
+            className="sidebar-img-div",
         ),
         html.Hr(),
         dbc.Nav(
@@ -38,18 +38,15 @@ sidebar = html.Div(
                     "APPA Data", href="/appa", active="exact", class_name="sidebar-link"
                 ),
                 html.Hr(),
-                dbc.NavLink(
-                    "Settings",
-                    href="/settings",
-                    active="exact",
-                    class_name="sidebar-link",
-                ),
             ],
             vertical=True,
             pills=True,
+            className="sidebar-btns-div"
         ),
+        html.Div(html.Img(src="/assets/img/fbk-logo.png", className="fbk-logo"),
+                 className="fbk-logo-div")
     ],
-    className = "fullHeight"
+    className="fullHeight"
 )
 
 app.layout = html.Div(
@@ -58,12 +55,13 @@ app.layout = html.Div(
         dbc.Row(
             [
                 dbc.Col(sidebar, lg=3, xl=2, md=3, className="sidebar"),
-                dbc.Col(dash.page_container, lg=9, xl=10, md=9, class_name="fullHeightAndPadding"),
+                dbc.Col(dash.page_container, lg=9, xl=10, md=9,
+                        class_name="fullHeightAndPadding"),
             ],
-            className = "fullHeight"
+            className="fullHeight"
         ),
     ],
-    className = "fullHeight"
+    className="fullHeight"
 )
 
 server = app.server

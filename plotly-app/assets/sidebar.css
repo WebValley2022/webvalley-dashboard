@@ -1,0 +1,37 @@
+.sidebar {
+  background-color: #fff;
+  padding: 1% 2%;
+  /* box-shadow: 5px 0 10px -5px rgba(242, 244, 247, 0.75); */
+}
+
+.sidebar-link {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.sidebar-img-div {
+  width: 100%;
+  padding-top: 1%;
+}
+
+.sidebar-img {
+  display: block;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.fbk-logo-div {
+  position: relative;
+  padding-top: 15rem;
+  bottom: 0;
+  height: 10%;
+  width: 100%;
+}
+
+.fbk-logo {
+  display: block;
+  max-width: 45%;
+  margin: auto;
+}
