@@ -65,7 +65,7 @@ download_btn = dbc.Button(
     id="btn_fbk_raw",
     class_name="download-btn",
 )
-download_it = dcc.Download(id="download-fbk-raw")
+download_it = None # dcc.Download(id="download-fbk-raw")
 
 
 @callback(
@@ -107,8 +107,7 @@ def update_resistance_plot(selected_period, selected_station):
     fbk_data_ResV["Data"] = pd.to_datetime(fbk_data_ResV.ts.dt.date)
 
     # keep signal_resistance drop Temperature, humidity, pressure, voltage and heater resistance
-    fbk_data_ResV = fbk_data_ResV.drop(
-        ["p", "rh", "t", "volt", "heater_res"], axis=1)
+    fbk_data_ResV = fbk_data_ResV.drop(["p", "rh", "t", "volt", "heater_res"], axis=1)
     fbk_data_ResV = fbk_data_ResV.reset_index()
 
     # filter for desired time span
@@ -156,7 +155,7 @@ def update_resistance_plot(selected_period, selected_station):
             text="Sensor Resistance (Ω)",
             xanchor="center",
             yanchor="top",
-            font_family="Sans serif"
+            font_family="Sans serif",
         ),
     )
     fig.update_yaxes(title_text="", fixedrange=True)
@@ -255,8 +254,8 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
             text="Bosch sensor",
             xanchor="center",
             yanchor="top",
-            font_family="Sans serif"
-        )
+            font_family="Sans serif",
+        ),
     )
 
     fig.update_yaxes(fixedrange=True)
@@ -281,8 +280,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
         go.Figure: the plot
     """
 
-    dfFBK1 = fbk_data[fbk_data["node_description"]
-                      == selected_station.split(" - ")[-1]]
+    dfFBK1 = fbk_data[fbk_data["node_description"] == selected_station.split(" - ")[-1]]
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["volt"] != pd.NA]
@@ -290,8 +288,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
 
     # drop Temperature, humidity, pressure
-    dfFBK1ResV = dfFBK1.drop(
-        ["p", "rh", "t", "signal_res", "heater_res"], axis=1)
+    dfFBK1ResV = dfFBK1.drop(["p", "rh", "t", "signal_res", "heater_res"], axis=1)
     dfFBK1ResV = dfFBK1ResV.reset_index()
 
     # filter for desired time span
@@ -339,8 +336,8 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
             text="Heater Voltage (V)",
             xanchor="center",
             yanchor="top",
-            font_family="Sans serif"
-        )
+            font_family="Sans serif",
+        ),
     )
     fig.update_yaxes(title_text="", fixedrange=True)
 
@@ -363,8 +360,7 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
     Returns:
         go.Figure: the plot
     """
-    dfFBK1 = fbk_data[fbk_data["node_description"]
-                      == selected_station.split(" - ")[-1]]
+    dfFBK1 = fbk_data[fbk_data["node_description"] == selected_station.split(" - ")[-1]]
 
     # select only valid values
     dfFBK1 = dfFBK1[dfFBK1["heater_res"] != pd.NA]
@@ -417,8 +413,8 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
             text="Heater Resistance (Ω)",
             xanchor="center",
             yanchor="top",
-            font_family="Sans serif"
-        )
+            font_family="Sans serif",
+        ),
     )
     fig.update_yaxes(title_text="", fixedrange=True)
 
@@ -529,8 +525,7 @@ layout = html.Div(
                             },
                             style=dict(height="25vh"),
                         ),
-                        html.Div(style=dict(height="1vh"),
-                                 className="transparent"),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
                         dcc.Graph(
                             id="bottom-right-plot",
                             className="side-plot",
@@ -540,8 +535,7 @@ layout = html.Div(
                             },
                             style=dict(height="25vh"),
                         ),
-                        html.Div(style=dict(height="1vh"),
-                                 className="transparent"),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
                         dcc.Graph(
                             id="middle-right-plot",
                             className="side-plot",

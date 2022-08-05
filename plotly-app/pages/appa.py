@@ -332,7 +332,7 @@ download_btn = dbc.Button(
     id="btn_appa",
     class_name="download-btn",
 )
-download_it = dcc.Download(id="download-text")
+download_it = None #dcc.Download(id="download-text")
 
 
 @callback(

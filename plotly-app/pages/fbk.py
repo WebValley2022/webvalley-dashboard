@@ -45,7 +45,7 @@ download_btn = dbc.Button(
     id="btn_fbk_fitted",
     class_name="download-btn",
 )
-download_it = dcc.Download(id="download-fbk-fitted")
+download_it = None # dcc.Download(id="download-fbk-fitted")
 
 
 @callback(
