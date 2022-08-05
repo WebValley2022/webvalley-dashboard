@@ -1,3 +1,4 @@
+from statistics import mean
 from dash import html, dcc, Input, Output, callback
 from .utils import utils
 
@@ -213,6 +214,9 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     mean_temp = dataframe[dataframe.Station == station]
     # get sub-dataframe
     mean_temp = mean_temp[["Time", pollutant_real, pollutant_pred]]
+    print(mean_temp.tail())
+    mean_temp.Time += pd.Timedelta(11, "D")
+    print(mean_temp.tail())
 
     # get the last date available
     last_day = mean_temp.Time.max()
