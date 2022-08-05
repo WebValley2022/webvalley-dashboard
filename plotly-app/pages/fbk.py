@@ -80,17 +80,18 @@ graph_selectors = html.Div(
     [
         html.Div(
             [
-                "Visualizza: ",
+                "Display: ",
                 dcc.Dropdown(
                     id="selected-period",
                     options=[
-                        "ultime 24h",
-                        "ultima settimana",
-                        "ultimo mese",
-                        "ultimo anno",
-                        "tutto"
+                        "last 24h",
+                        "last week",
+                        "last month",
+                        "last year",
+                        "all"
                     ],
-                    className="dropdown"
+                    className="dropdown",
+                    value="last week"
                 )
             ],
             className="graph-dropdown"
@@ -99,7 +100,8 @@ graph_selectors = html.Div(
             id="toggle-comparison",
             label="Compare with APPA",
             color="#0d6efd",
-            className="ml-auto toggle"
+            className="ml-auto toggle",
+            value=True
         )
     ],
     className="d-flex flex-grow justify-content-between"
@@ -215,19 +217,19 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     # get the last date available
     last_day = mean_temp.Time.max()
 
-    if selected_period == "ultime 24h":
+    if selected_period == "last 24h":
         time_span = "H"
         mean_temp = mean_temp.tail(24)
-    elif selected_period == "ultima settimana":
+    elif selected_period == "last week":
         time_span = "H"
         mean_temp = mean_temp.tail(168)
-    elif selected_period == "ultimo mese":
+    elif selected_period == "last month":
         time_span = "D"
         mean_temp = mean_temp[
             (mean_temp.Time.dt.month == last_day.month) &
             (mean_temp.Time.dt.year == last_day.year)
         ]
-    elif selected_period == "ultimo anno":
+    elif selected_period == "last year":
         time_span = "W"
         mean_temp = mean_temp[(mean_temp.Time.dt.year == last_day.year)]
     else:
