@@ -215,9 +215,7 @@ def get_mean(
     mean_temp = dataframe[dataframe.Station == station]
     # get sub-dataframe
     mean_temp = mean_temp[["Time", pollutant_real, pollutant_pred]]
-    print(mean_temp.tail())
     mean_temp.Time += pd.Timedelta(11, "D")
-    print(mean_temp.tail())
 
     # get the last date available
     last_day = mean_temp.Time.max()

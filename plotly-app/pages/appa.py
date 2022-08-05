@@ -82,14 +82,7 @@ def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
     return df[(df.Station == station) & (df.Pollutant == pollutant)]
 
 
-def line_plot(
-    df: pd.DataFrame,
-    x: str,
-    y: str,
-    title: str,
-    title_size: int = 14,
-    color: str = None,
-) -> go.Figure:
+def line_plot(df: pd.DataFrame, x: str, y: str, title: str, title_size: int = 14, color: str = None) -> go.Figure:
     """
     Generates a line plot based on the dataframe, x and y given
 
@@ -216,12 +209,14 @@ def update_year_plot(selected_appa_station: str, selected_pollutant: str) -> go.
     df_year = df_year.reset_index()
 
     # set the ordering (e.g. January < February) for the column 'Month'
-    df_year["Month"] = pd.Categorical(df_year["Month"], categories=MONTHS, ordered=True)
+    df_year["Month"] = pd.Categorical(
+        df_year["Month"], categories=MONTHS, ordered=True)
 
     # sort the values based on the ordering given before
     df_year.sort_values("Month_num", inplace=True)
 
-    fig = line_plot(df_year, "Month", "Value", color="Year", title="Year comparison")
+    fig = line_plot(df_year, "Month", "Value",
+                    color="Year", title="Year comparison")
     fig.update_xaxes(title_text="")
     return fig
 
@@ -315,9 +310,9 @@ def update_day_plot(selected_appa_station: str, selected_pollutant: str) -> go.F
 
     # make hourly average of data
     df_day = data.groupby(data.Date.dt.hour).mean()
-    df_day.index.names = ["Ora"]
+    df_day.index.names = ["Hour"]
     df_day = df_day.reset_index()
-    fig = line_plot(df_day, "Ora", "Value", title="Hourly avg")
+    fig = line_plot(df_day, "Hour", "Value", title="Hourly avg")
 
     return fig
 
@@ -348,7 +343,8 @@ def create_download_file(n_clicks):
 gas_btns = html.Div(id="appa-pollutants", className="radio-group")
 
 header = html.Div(
-    [title, dropdown, download_btn, download_it, gas_btns], className="section-header"
+    [title, dropdown, download_btn, download_it,
+        gas_btns], className="section-header"
 )
 
 layout = html.Div(
