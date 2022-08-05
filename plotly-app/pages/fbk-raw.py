@@ -129,7 +129,7 @@ def update_resistance_plot(selected_period, selected_station):
 
     fig = go.Figure()
     # use hour as X axis
-    if(selected_period == "last hour" or selected_period == "last day"):
+    if selected_period in ["last hour", "last week", "last day", "last month"]:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
@@ -303,7 +303,7 @@ def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.
     # fig.update_yaxes(type="log")
 
     # use hour as X axis
-    if(selected_period == "last hour" or selected_period == "last day"):
+    if selected_period in ["last hour", "last week", "last day", "last month"]:
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
@@ -365,7 +365,7 @@ def update_top_right_plot(selected_period: str, selected_station: str) -> go.Fig
     fig = go.Figure()
 
     # use hour as X axis
-    if(selected_period == "last hour" or selected_period == "last day"):
+    if selected_period in ["last hour", "last week", "last day", "last month"]:
         for SensingMaterial, group in dfFBK1ResV.groupby("sensor_description"):
             fig.add_trace(
                 go.Scatter(
@@ -411,15 +411,30 @@ def verify_period(period, df):
         df = df.reset_index()
         return df
     elif period == "last month":
-        df = df.groupby(["Data", "sensor_description"]).mean()
+        # make hour average
+        df = df.groupby([
+            pd.Grouper(
+                key="ts",
+                freq="1H"
+            ),
+            pd.Grouper("sensor_description")
+        ]).mean()
         df = df.reset_index()
-        df = df.set_index("Data")
+        df = df.set_index("ts")
         df = df.last("30D")
         df = df.reset_index()
         return df
     elif period == "last week":
+        # make hour average
+        df = df.groupby([
+            pd.Grouper(
+                key="ts",
+                freq="1H"
+            ),
+            pd.Grouper("sensor_description")
+        ]).mean()
         df = df.reset_index()
-        df = df.set_index("Data")
+        df = df.set_index("ts")
         df = df.last("7D")
         df = df.reset_index()
         return df
