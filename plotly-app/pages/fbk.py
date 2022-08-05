@@ -29,17 +29,14 @@ fbk_stations = ["Parco S. Chiara", "Via Bolzano"]
 pollutants = [
     dict(label="Nitrogen Dioxide", value="NO2"),
     dict(label="Ozone", value="O3"),
-    dict(label="Carbon Monoxide", value="CO")
+    dict(label="Carbon Monoxide", value="CO"),
 ]
 
 title = html.Div("Fitted FBK Data", className="header-title")
 
 # build dropdown of stations
 dropdown = dcc.Dropdown(
-    fbk_stations,
-    id="selected-station",
-    className="dropdown",
-    value=fbk_stations[0]
+    fbk_stations, id="selected-station", className="dropdown", value=fbk_stations[0]
 )
 
 download_btn = dbc.Button(
@@ -62,19 +59,21 @@ def create_download_file(n_clicks):
 
 
 # build gas buttons
-gas_btns = html.Div(dbc.RadioItems(
-    id="selected-fbk-pollutant",
-    class_name="btn-group",
-    input_class_name="btn-check",
-    label_class_name="btn btn-outline-primary",
-    label_checked_class_name="active",
-    options=pollutants,
-    value="NO2"
-), className="radio-group")
+gas_btns = html.Div(
+    dbc.RadioItems(
+        id="selected-fbk-pollutant",
+        class_name="btn-group",
+        input_class_name="btn-check",
+        label_class_name="btn btn-outline-primary",
+        label_checked_class_name="active",
+        options=pollutants,
+        value="NO2",
+    ),
+    className="radio-group",
+)
 
 header = html.Div(
-    [title, dropdown, download_btn, download_it, gas_btns],
-    className="section-header"
+    [title, dropdown, download_btn, download_it, gas_btns], className="section-header"
 )
 
 graph_selectors = html.Div(
@@ -84,38 +83,37 @@ graph_selectors = html.Div(
                 "Display: ",
                 dcc.Dropdown(
                     id="selected-period",
-                    options=[
-                        "last 24h",
-                        "last week",
-                        "last month",
-                        "last year",
-                        "all"
-                    ],
+                    options=["last 24h", "last week", "last month", "last year", "all"],
                     className="dropdown",
-                    value="last week"
-                )
+                    value="last week",
+                ),
             ],
-            className="graph-dropdown"
+            className="graph-dropdown",
         ),
         daq.ToggleSwitch(
             id="toggle-comparison",
             label="Compare with APPA",
             color="#0d6efd",
             className="ml-auto toggle",
-            value=True
-        )
+            value=True,
+        ),
     ],
-    className="d-flex flex-grow justify-content-between"
+    className="d-flex flex-grow justify-content-between",
 )
 
 comparison_graph = html.Div(
-    [dcc.Graph(id="comparison-graph", style=dict(height="50vh"), config={
-        'displayModeBar': False,
-        'displaylogo': False,
-    }), graph_selectors])
-
-
-# TODO: Fix labels.
+    [
+        dcc.Graph(
+            id="comparison-graph",
+            style=dict(height="50vh"),
+            config={
+                "displayModeBar": False,
+                "displaylogo": False,
+            },
+        ),
+        graph_selectors,
+    ]
+)
 
 
 @callback(
@@ -123,13 +121,13 @@ comparison_graph = html.Div(
     Input("selected-station", "value"),
     Input("selected-fbk-pollutant", "value"),
     Input("toggle-comparison", "value"),
-    Input("selected-period", "value")
+    Input("selected-period", "value"),
 )
 def update_comparison_graph(
     selected_station: str,
     selected_pollutant: str,
     toggle_comparison: str,
-    selected_period: str
+    selected_period: str,
 ) -> go.Figure:
     """
     Updates the graph representing the comparison between
@@ -149,12 +147,7 @@ def update_comparison_graph(
 
     fig = go.Figure()
 
-    data = get_mean(
-        df,
-        selected_station,
-        selected_pollutant,
-        selected_period
-    )
+    data = get_mean(df, selected_station, selected_pollutant, selected_period)
 
     # data = df[df.Station == selected_station]
 
@@ -163,12 +156,11 @@ def update_comparison_graph(
     # prediction graph
     fig.add_trace(
         go.Scatter(
-            x=data["Time"],
-            y=data[pollutant_pred],
-            mode="lines+markers",
-            name="FBK"
+            x=data["Time"], y=data[pollutant_pred], mode="lines+markers", name="FBK"
         )
     )
+
+    title = "Pollutant concentration prediction"
 
     if toggle_comparison:
         # appa data graph
@@ -181,13 +173,26 @@ def update_comparison_graph(
             )
         )
 
-    fig.update_layout(margin=dict(l=5, r=5, t=0, b=0), plot_bgcolor="white")
-    fig.update_yaxes(fixedrange=True)
+        title += " compared to APPA readings"
+
+    fig.update_layout(
+        margin=dict(l=5, r=5, t=20, b=0),
+        plot_bgcolor="white",
+        title={
+            "x": 0.5,
+            "text": title,
+            "xanchor": "center",
+            "yanchor": "top",
+        },
+    )
+    fig.update_yaxes(title_text="Value", fixedrange=True)
 
     return fig
 
 
-def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, selected_period) -> pd.DataFrame:
+def get_mean(
+    dataframe: pd.DataFrame, station: str, selected_pollutant: str, selected_period
+) -> pd.DataFrame:
     """
     Gets the mean of a given time span from the given station
     and pollutant in the given dataframe
@@ -201,11 +206,7 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     Returns:
         pd.DataFrame: the dataframe with the mean values
     """
-    pollutants = {
-        "Biossido di Azoto": "NO2",
-        "Ozono": "O3",
-        "Ossido di Carbonio": "CO"
-    }
+    pollutants = {"Biossido di Azoto": "NO2", "Ozono": "O3", "Ossido di Carbonio": "CO"}
 
     pollutant_real = selected_pollutant + "_real"
     pollutant_pred = selected_pollutant + "_pred"
@@ -230,8 +231,8 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     elif selected_period == "last month":
         time_span = "D"
         mean_temp = mean_temp[
-            (mean_temp.Time.dt.month == last_day.month) &
-            (mean_temp.Time.dt.year == last_day.year)
+            (mean_temp.Time.dt.month == last_day.month)
+            & (mean_temp.Time.dt.year == last_day.year)
         ]
     elif selected_period == "last year":
         time_span = "W"
@@ -239,12 +240,7 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
     else:
         time_span = "W"
 
-    mean_temp = mean_temp.groupby(
-        by=pd.Grouper(
-            key="Time",
-            freq=time_span
-        )
-    ).mean()
+    mean_temp = mean_temp.groupby(by=pd.Grouper(key="Time", freq=time_span)).mean()
     # mean_temp.insert(1, "Inquinante", pollutant)
     # mean_temp.insert(1, "Stazione", station)
     mean_temp.reset_index(inplace=True)
@@ -253,9 +249,6 @@ def get_mean(dataframe: pd.DataFrame, station: str, selected_pollutant: str, sel
 
 
 layout = html.Div(
-    [
-        header,
-        html.Div([comparison_graph], className="fbk-main-plot")
-    ],
-    className="section fullHeight"
+    [header, html.Div([comparison_graph], className="fbk-main-plot")],
+    className="section fullHeight",
 )

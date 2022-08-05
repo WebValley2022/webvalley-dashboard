@@ -166,7 +166,7 @@ def update_resistance_plot(selected_period, selected_station):
     Input("selected-period", "value"),
     Input("selected-station", "value"),
 )
-def update_middle_right_plot(selected_period: str, selected_station: str) -> go.Figure:
+def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     """
     Updates the plot that represents the variation of pressure, temperature and humidity
     over time
@@ -203,7 +203,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     trace1 = go.Scatter(
         x=dfFBK1TPH["ts"],
         y=dfFBK1TPH["t"],
-        name="Temperature",
+        name="Temp",
         mode="lines",
         yaxis="y1",
         hovertemplate="Parameter = Temperature<br>Value = %{y}<br>Date = %{x}<extra></extra>",
@@ -213,7 +213,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     trace2 = go.Scatter(
         x=dfFBK1TPH["ts"],
         y=dfFBK1TPH["rh"],
-        name="Humidity",
+        name="RH",
         mode="lines",
         yaxis="y1",
         hovertemplate="Parameter = Humidity<br>Value = %{y}<br>Date = %{x}<extra></extra>",
@@ -223,7 +223,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     trace3 = go.Scatter(
         x=dfFBK1TPH["ts"],
         y=dfFBK1TPH["p"],
-        name="Pressure",
+        name="Press",
         yaxis="y2",
         mode="lines",
         hovertemplate="Parameter = Pressure<br>Value = %{y}<br>Date = %{x}<extra></extra>",
@@ -239,8 +239,21 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
         font=dict(size=10),
         yaxis=dict(title="Temp (°C) & RH (%)"),
         yaxis2=dict(title="pressure (psi)", overlaying="y", side="right"),
-        legend={"y": 1.02, "yanchor": "top", "xanchor": "right", "orientation": "h"},
-        title={"x": 0.5, "text": "Bosch sensor", "xanchor": "center", "yanchor": "top"},
+        legend={
+            "x": 0.1,
+            "y": 1.4,
+            "yanchor": "top",
+            "xanchor": "left",
+            "orientation": "h",
+            "bgcolor": "rgba(0,0,0,0)",
+        },
+        title={
+            "x": 0.5,
+            "y": 0.95,
+            "text": "Bosch sensor",
+            "xanchor": "center",
+            "yanchor": "top",
+        },
     )
 
     fig.update_yaxes(fixedrange=True)
@@ -253,7 +266,7 @@ def update_middle_right_plot(selected_period: str, selected_station: str) -> go.
     Input("selected-period", "value"),
     Input("selected-station", "value"),
 )
-def update_bottom_right_plot(selected_period: str, selected_station: str) -> go.Figure:
+def update_middle_right_plot(selected_period: str, selected_station: str) -> go.Figure:
     """
     Updates the plot representing the cange of voltage in the heater over time
 
