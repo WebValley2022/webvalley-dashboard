@@ -32,12 +32,14 @@ WebValley 2022 Computer Science #3 Challenge :bar_chart:
 
 ## How to run
 
-Local deployment: 
+Local deployment (~15s to start):
 ```sh
+cd plotly-app
 DEBUG=True python app.py
 ```
 
-Server deployment: 
+Server deployment (~15s to start):
 ```sh
+cd plotly-app
 gunicorn -b 0.0.0.0:8051 app:server
 ```
