@@ -19,17 +19,18 @@ from flask_caching import Cache
 
 
 TIMEOUT = 360
-"""
+
 cache = Cache(dash.get_app().server, config={
     'CACHE_TYPE': 'filesystem',
     'CACHE_DIR': 'cache-directory'
 })
-"""
-cache = Cache(dash.get_app().server, config={
+
+
+"""cache = Cache(dash.get_app().server, config={
     # try 'filesystem' if you don't want to setup redis
     'CACHE_TYPE': 'redis',
     'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
-})
+})"""
 
 sensor_description= load_data_from_psql(querys.query_sensor)
 sensor_description.set_index("id", inplace=True)
@@ -54,7 +55,7 @@ def get_data_6months():
 
 
 def cache_fbk_data(selected_period):
-    if not os.getenv("DEBUG"):
+    if os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()
