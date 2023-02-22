@@ -13,6 +13,8 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME],
 )
 
+
+
 sidebar = html.Div(
     [
         html.Div(

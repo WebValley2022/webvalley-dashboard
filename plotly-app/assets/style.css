@@ -23,6 +23,11 @@ html {
   font-size: 12px;
 }
 
+.radioitems{ 
+  font-size: 15px;
+  color: black;
+}
+
 .graph-dropdown {
   flex-grow: 3;
   margin-left: 2%;

@@ -7,7 +7,7 @@ APPA_FILE_PATH = "../../data/21_22_APPA.csv"
 PREDICTION_FILE_PATH = "../../data/appa1_predictions.csv"
 
 
-def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
+def filter_fbk_data(dataframe: pd.DataFrame, df_sensor) -> pd.DataFrame:
     """
     Filters the data given as input
 
@@ -17,10 +17,10 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: the filtered dataframe
     """
-    dataframe = dataframe.drop(
-        ["node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"], axis=1
-    )
-    dataframe["ts"] = pd.to_datetime(dataframe["ts"])
+    #dataframe = dataframe.drop(
+    #    ["node_name", "g", "h", "th", "cfg", "iaq", "co2", "voc", "iac_comp"], axis=1
+    #)
+    dataframe["ts"] = pd.to_datetime(dataframe["ts"], utc=True)
     # Set CEST Summer time zone
     dataframe["ts"] += pd.Timedelta(hours=2)
     dataframe["signal_res"] = dataframe["signal_res"].astype(float)
@@ -29,11 +29,20 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe["p"] = dataframe["p"].astype(float)
     dataframe["t"] = dataframe["t"].astype(float)
     dataframe["rh"] = dataframe["rh"].astype(float)
-
-    dataframe["sensor_description"] = (
-        dataframe["sensor_description"].str.split(pat="_").str.get(0)
-    )
-
+    
+    #dataframe["sensor_description"] = (
+    #    dataframe["sensor_description"].str.split(pat="_").str.get(0)
+    #)
+    #print(df_sensor.loc[2]["description"])
+    #dataframe["sensor_description"] = (
+    #    dataframe["sensor_description"].astype(str) + df_sensor.loc[int(dataframe["sensor_description"])]["description"].str.split(pat="_").str.get(0)
+    #)
+    #for index, row in dataframe.iterrows():
+    #    dataframe.loc[index]["sensor_description"] = df_sensor.loc[int(row["sensor_description"])] ["description"]
+    
+    #if dataframe["sensor_description"].dtypes == "int64":
+    dataframe['sensor_description'] = dataframe.apply (lambda row: str(row['sensor_description'])+'_'+df_sensor.loc[int(row["sensor_description"])]["description"].split("_")[0] , axis=1)
+    
     dataframe.drop_duplicates(["sensor_description", "ts"], inplace=True)
 
     dataframe["node_description"] = dataframe["node_description"].str.replace(
@@ -42,7 +51,7 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe["node_description"] = dataframe["node_description"].str.replace(
         "Appa 2 - ", ""
     )
-
+    #print(dataframe)
     return dataframe
 
 

@@ -55,7 +55,7 @@ else:
 # keep only rows with a value that's not NA
 df = df[df.Value != "n.d."]
 
-df["Date"] = pd.to_datetime(df["Date"])
+df["Date"] = pd.to_datetime(df["Date"],utc=True)
 df.Pollutant = df.Pollutant.replace(
     {
         "Biossido di Azoto": "Nitrogen Dioxide",
