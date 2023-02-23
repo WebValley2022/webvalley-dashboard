@@ -39,19 +39,35 @@ sensor_description.set_index("id", inplace=True)
 dash.register_page(__name__, path="/")
 
 @cache.memoize(timeout=360)   
-def get_data_hours():
+def get_data_hours(sensor_description):
     print("NOT CACHED HOURS")
-    return load_data_from_psql(querys.query_hour)
+    fbk_data = load_data_from_psql(querys.query_hour)
+    return utils.filter_fbk_data(fbk_data, sensor_description)
+
+@cache.memoize(timeout=1800)   
+def get_data_day(sensor_description):
+    print("NOT CACHED DAY")
+    fbk_data=  load_data_from_psql(querys.query_day)
+    return utils.filter_fbk_data(fbk_data, sensor_description)
 
 @cache.memoize(timeout=3600)   
-def get_data_week():
-    print("NOT CACHED DAY/WEEK")
-    return load_data_from_psql(querys.query_week)
+def get_data_week(sensor_description):
+    print("NOT CACHED WEEK")
+    fbk_data=  load_data_from_psql(querys.query_week_test)
+    return utils.filter_fbk_data(fbk_data, sensor_description)
 
 @cache.memoize(timeout=864000)   
-def get_data_6months():
-    print("NOT CACHED MONTHS")
-    return load_data_from_psql(querys.query_6mouths)
+def get_data_month(sensor_description):
+    print("NOT CACHED MONTH")
+    fbk_data = load_data_from_psql(querys.query_month_test)
+    return utils.filter_fbk_data(fbk_data, sensor_description)
+
+@cache.memoize(timeout=604800)   
+def get_data_6months(sensor_description):
+    print("NOT CACHED 6_MONTHS")
+    fbk_data = load_data_from_psql(querys.query_6moths_test2)
+    return utils.filter_fbk_data(fbk_data, sensor_description)
+
 
 
 def cache_fbk_data(selected_period):
@@ -60,20 +76,21 @@ def cache_fbk_data(selected_period):
     else:
         start = datetime.now()
         if selected_period  in "last hour":
-            fbk_data = get_data_hours()
+            fbk_data = get_data_hours(sensor_description)
         elif selected_period  in "last day":
-            fbk_data = get_data_week()
+            fbk_data = get_data_day(sensor_description)
         elif selected_period  in "last week":
-            fbk_data = get_data_week()
+            fbk_data = get_data_week(sensor_description)
         elif selected_period  in "last month":
-            fbk_data = get_data_6months()
+            fbk_data = get_data_month(sensor_description)
         elif selected_period  in "last 6 months":
-            fbk_data = get_data_6months()    
+            fbk_data = get_data_6months(sensor_description)    
         #print(query)
         #fbk_data = load_data_from_psql(query)
         logging.info("Query time", datetime.now() - start)
         print("QUERY TIME: ", datetime.now() - start)
-        return utils.filter_fbk_data(fbk_data, sensor_description)
+        #return utils.filter_fbk_data(fbk_data, sensor_description)
+        return fbk_data
 
 title = html.Div("Raw FBK Data", className="header-title")
 
@@ -124,16 +141,6 @@ dropdown_wrapper = html.Div(
 header = html.Div(
     [title, download_btn, download_it, dropdown_wrapper, yaxis_type], className="section-header"
 )
-
-"""@callback(
-    Output("resistance-plot", "figure"),
-    Input("switch", "on"),
-    State("resistance-plot","figure"),
-    prevent_initial_call=True,
-)
-def update_output(on,fig):
-    print("asd")
-    return fig.update_yaxes(type="log")"""
     
 
 @callback(
@@ -319,7 +326,7 @@ def update_plots(selected_period, selected_station, yaxis_type, res_state, het_s
     volt_plot.update_yaxes(title_text="", fixedrange=True)
     
     #---------------------------BOSCH PLOT---------------------------
-    fbk_data_bosch = verify_period_TPH(selected_period,dfFBK1)
+    fbk_data_bosch = verify_period_TPH(selected_period, dfFBK1)
     fbk_data_bosch.sort_values(by="ts", inplace=True)
     
     # Temperature graph

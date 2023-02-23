@@ -33,14 +33,6 @@ def filter_fbk_data(dataframe: pd.DataFrame, df_sensor) -> pd.DataFrame:
     #dataframe["sensor_description"] = (
     #    dataframe["sensor_description"].str.split(pat="_").str.get(0)
     #)
-    #print(df_sensor.loc[2]["description"])
-    #dataframe["sensor_description"] = (
-    #    dataframe["sensor_description"].astype(str) + df_sensor.loc[int(dataframe["sensor_description"])]["description"].str.split(pat="_").str.get(0)
-    #)
-    #for index, row in dataframe.iterrows():
-    #    dataframe.loc[index]["sensor_description"] = df_sensor.loc[int(row["sensor_description"])] ["description"]
-    
-    #if dataframe["sensor_description"].dtypes == "int64":
     dataframe['sensor_description'] = dataframe.apply (lambda row: str(row['sensor_description'])+'_'+df_sensor.loc[int(row["sensor_description"])]["description"].split("_")[0] , axis=1)
     
     dataframe.drop_duplicates(["sensor_description", "ts"], inplace=True)
