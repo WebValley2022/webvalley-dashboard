@@ -5,7 +5,6 @@ from .utils import utils, querys
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-import dash_daq as daq
 import pandas as pd
 import logging
 import dash
@@ -17,8 +16,6 @@ from flask_caching import Cache
 # SECTION 1 PAGE #
 ##################
 
-
-TIMEOUT = 360
 
 cache = Cache(dash.get_app().server, config={
     'CACHE_TYPE': 'filesystem',
@@ -32,64 +29,57 @@ cache = Cache(dash.get_app().server, config={
     'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
 })"""
 
-sensor_description= load_data_from_psql(querys.query_sensor)
-sensor_description.set_index("id", inplace=True)
-#print(sensor_description)
 
 dash.register_page(__name__, path="/")
 
-@cache.memoize(timeout=360)   
-def get_data_hours(sensor_description):
+@cache.memoize(timeout=360) #cached 5 min
+def get_data_hours() -> pd.DataFrame:
     print("NOT CACHED HOURS")
     fbk_data = load_data_from_psql(querys.query_hour)
-    return utils.filter_fbk_data(fbk_data, sensor_description)
+    return utils.filter_fbk_data(fbk_data)
 
-@cache.memoize(timeout=1800)   
-def get_data_day(sensor_description):
+@cache.memoize(timeout=1800) #cached 30 min
+def get_data_day() -> pd.DataFrame:
     print("NOT CACHED DAY")
     fbk_data=  load_data_from_psql(querys.query_day)
-    return utils.filter_fbk_data(fbk_data, sensor_description)
+    return utils.filter_fbk_data(fbk_data)
 
-@cache.memoize(timeout=3600)   
-def get_data_week(sensor_description):
+@cache.memoize(timeout=3600) #cached 1 hour
+def get_data_week() -> pd.DataFrame:
     print("NOT CACHED WEEK")
     fbk_data=  load_data_from_psql(querys.query_week_test)
-    return utils.filter_fbk_data(fbk_data, sensor_description)
+    return utils.filter_fbk_data(fbk_data)
 
-@cache.memoize(timeout=864000)   
-def get_data_month(sensor_description):
+@cache.memoize(timeout=864000)#cached 1 day
+def get_data_month() -> pd.DataFrame:
     print("NOT CACHED MONTH")
     fbk_data = load_data_from_psql(querys.query_month_test)
-    return utils.filter_fbk_data(fbk_data, sensor_description)
+    return utils.filter_fbk_data(fbk_data)
 
-@cache.memoize(timeout=604800)   
-def get_data_6months(sensor_description):
+@cache.memoize(timeout=604800) #cached 7 day  
+def get_data_6months() -> pd.DataFrame:
     print("NOT CACHED 6_MONTHS")
     fbk_data = load_data_from_psql(querys.query_6moths_test2)
-    return utils.filter_fbk_data(fbk_data, sensor_description)
+    return utils.filter_fbk_data(fbk_data)
 
 
-
-def cache_fbk_data(selected_period):
+def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
     if os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()
         if selected_period  in "last hour":
-            fbk_data = get_data_hours(sensor_description)
+            fbk_data = get_data_hours()
         elif selected_period  in "last day":
-            fbk_data = get_data_day(sensor_description)
+            fbk_data = get_data_day()
         elif selected_period  in "last week":
-            fbk_data = get_data_week(sensor_description)
+            fbk_data = get_data_week()
         elif selected_period  in "last month":
-            fbk_data = get_data_month(sensor_description)
+            fbk_data = get_data_month()
         elif selected_period  in "last 6 months":
-            fbk_data = get_data_6months(sensor_description)    
-        #print(query)
-        #fbk_data = load_data_from_psql(query)
+            fbk_data = get_data_6months()    
         logging.info("Query time", datetime.now() - start)
         print("QUERY TIME: ", datetime.now() - start)
-        #return utils.filter_fbk_data(fbk_data, sensor_description)
         return fbk_data
 
 title = html.Div("Raw FBK Data", className="header-title")
@@ -105,9 +95,26 @@ yaxis_type  = dcc.RadioItems(
                 ['Linear', 'Log'],
                 'Linear',
                 id='yaxis-type',
-                inline=True,
-                className="radioitems"
+                #inline=False,
+                className="radioitems",
+                labelStyle={'display': 'block'}
             )
+date_range = dcc.DatePickerRange(
+    id='my-date-picker-range',
+    month_format='MMMM Y',
+    start_date_placeholder_text="Start Period",
+    end_date_placeholder_text="End Period",
+    clearable=True,
+)
+
+search = dbc.Button(
+    children= html.I(
+        className= "fas fa-search"
+    ),
+    id="btn_search_date",
+    class_name="btn btn-primary",
+    style={"width":"50px"}
+)
 
 download_btn = dbc.Button(
     [html.I(className="fa-solid fa-download"), " Download full data"],
@@ -138,8 +145,15 @@ dropdown_wrapper = html.Div(
     [dropdown_station, dropdown_period], className="dropdownWrapper"
 )
 
+date_wrapper = html.Div(
+    [date_range, search], className="right"
+)
+
+option_wrapper = html.Div(
+    [yaxis_type, date_wrapper], className="dropdownWrapper"
+)
 header = html.Div(
-    [title, download_btn, download_it, dropdown_wrapper, yaxis_type], className="section-header"
+    [title, download_btn, download_it, dropdown_wrapper, option_wrapper], className="section-header"
 )
     
 
@@ -153,32 +167,41 @@ header = html.Div(
     Input("selected-period", "value"),
     Input("selected-station", "value"),
     Input("yaxis-type", "value"),
+    Input("btn_search_date", "n_clicks"),
     
     [State("resistance-plot","figure"),
     State("top-right-plot", "figure"),
     State("middle-right-plot", "figure"),
-    State("bottom-right-plot", "figure")]
+    State("bottom-right-plot", "figure"),
+    State("my-date-picker-range","start_date"),
+    State("my-date-picker-range","end_date"),]
 
 )
-def update_plots(selected_period, selected_station, yaxis_type, res_state, het_state, volt_state, bosch_state):
+def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_state, het_state, volt_state, bosch_state, start_date, end_date):
     
     if "yaxis-type" == callback_context.triggered_id:
         res_state["layout"]["yaxis"]["type"] = ('linear' if yaxis_type == 'Linear' else 'log')
         return res_state, het_state, volt_state, bosch_state
     
-    fbk_data = cache_fbk_data(selected_period)
-    #print(fbk_data)
+    if "btn_search_date" == callback_context.triggered_id:
+        fbk_data = utils.query_custom(start_date, end_date)
+    else:
+        fbk_data = cache_fbk_data(selected_period)
+        
+    
+    #print("madonna troia ",fbk_data)
     
     dfFBK1 = fbk_data[
         fbk_data["node_description"] == selected_station.split(" - ")[-1]
     ].dropna(inplace=False)
 
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
-    fbk_data_ResV = verify_period(selected_period, dfFBK1)
     
-    
-    
-    
+    if "btn_search_date" != callback_context.triggered_id:
+        fbk_data_ResV = verify_period(selected_period, dfFBK1)
+    else:
+        fbk_data_ResV = dfFBK1
+        
     #----------------------HEATER PLOT-----------------------------
     
     resistance_plot = go.Figure()
@@ -326,7 +349,11 @@ def update_plots(selected_period, selected_station, yaxis_type, res_state, het_s
     volt_plot.update_yaxes(title_text="", fixedrange=True)
     
     #---------------------------BOSCH PLOT---------------------------
-    fbk_data_bosch = verify_period_TPH(selected_period, dfFBK1)
+    if "btn_search_date" != callback_context.triggered_id:
+        fbk_data_bosch = verify_period_TPH(selected_period, dfFBK1)
+    else:
+        fbk_data_bosch = dfFBK1
+        
     fbk_data_bosch.sort_values(by="ts", inplace=True)
     
     # Temperature graph

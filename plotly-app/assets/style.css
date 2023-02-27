@@ -20,11 +20,11 @@ html {
 
 .dropdown {
   color: black;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .radioitems{ 
-  font-size: 15px;
+  font-size: 14px;
   color: black;
 }
 
@@ -73,4 +73,14 @@ html {
 
 .dropdownWrapper > * {
   width: 45%;
+}
+
+.DateRangePicker{
+  float: right;
+}
+
+.right{
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
 }
