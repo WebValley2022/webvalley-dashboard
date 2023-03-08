@@ -2,6 +2,7 @@ from dash import html, dcc, Input, Output, callback, State, callback_context
 from db_utils import load_data_from_psql
 from datetime import datetime
 from .utils import utils, querys
+import json
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
@@ -125,6 +126,39 @@ download_btn = dbc.Button(
 download_it = dcc.Download(id="download-fbk-raw")
 
 
+popovers = html.Div(
+    [
+        dbc.Button(
+            children= html.I(
+                className= "fa-solid fa-circle-info"
+            ),
+            id="btn-info",
+            n_clicks=0,
+            color="light"
+        ),
+        dbc.Popover(
+            [
+                dbc.PopoverHeader("Historical changes"),
+                dbc.PopoverBody([
+                        dcc.Checklist(options=['Show history changes'], value=['History'], id="check_history")
+                        ,html.Div([html.P("ass")],
+                            className="text-muted px-4 mt-4",
+                            id="desc-sensors",
+                        )
+                        ,
+                ] ),
+            ],
+            target="btn-info",
+            trigger="legacy",
+            placement="bottom",
+            style= {"min-width": "330px"}
+        ),
+    ],style= {"margin-right":"110px"}
+)
+
+
+LAST_CLICKED = None
+
 @callback(
     Output("download-fbk-raw", "data"),
     Input("btn_fbk_raw", "n_clicks"),
@@ -146,7 +180,7 @@ dropdown_wrapper = html.Div(
 )
 
 date_wrapper = html.Div(
-    [date_range, search], className="right"
+    [popovers, date_range, search], className="right"
 )
 
 option_wrapper = html.Div(
@@ -155,6 +189,35 @@ option_wrapper = html.Div(
 header = html.Div(
     [title, download_btn, download_it, dropdown_wrapper, option_wrapper], className="section-header"
 )
+
+@callback(
+    
+    Output("desc-sensors","children"),
+    Input("selected-station", "value"),
+)
+def update_desc(station):
+    appa1 = 1
+    appa2 = 6
+    sensors = load_data_from_psql(querys.query_sensor)
+    d = {
+        "S1_ID":None, "S2_ID":None,
+        "S3_ID":None, "S4_ID":None,
+        "S5_ID":None, "S6_ID":None,
+        "S7_ID":None, "S8_ID":None,
+    }
+    
+    station = appa1 if (station.split(" - ")[-1] == "S. Chiara") else appa2
+    
+    sensors = sensors.loc[(sensors["node_id"] == station) & (sensors["active"] == True)]
+    for key, row in sensors.iterrows():
+        d[row["name"]] = row["description"]
+        
+    ll = []
+      
+    for k, v in d.items():
+        ll.append(html.P(f"{k}: {v}")) 
+    
+    return ll
     
 
 @callback(
@@ -168,6 +231,7 @@ header = html.Div(
     Input("selected-station", "value"),
     Input("yaxis-type", "value"),
     Input("btn_search_date", "n_clicks"),
+    Input("check_history", "value"),
     
     [State("resistance-plot","figure"),
     State("top-right-plot", "figure"),
@@ -177,19 +241,45 @@ header = html.Div(
     State("my-date-picker-range","end_date"),]
 
 )
-def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_state, het_state, volt_state, bosch_state, start_date, end_date):
+def update_plots(selected_period, selected_station, yaxis_type, btn_date, history, res_state, het_state, volt_state, bosch_state, start_date, end_date):
+    global LAST_CLICKED
     
     if "yaxis-type" == callback_context.triggered_id:
         res_state["layout"]["yaxis"]["type"] = ('linear' if yaxis_type == 'Linear' else 'log')
         return res_state, het_state, volt_state, bosch_state
     
-    if "btn_search_date" == callback_context.triggered_id:
+    elif "check_history" == callback_context.triggered_id:
+        station = 1 if (selected_station.split(" - ")[-1] == "S. Chiara") else 6
+        sensors = load_data_from_psql(querys.query_history_sensor)
+        sensors = sensors .loc[sensors["node_id"] == station]
+        sensors["attrs"] = sensors["attrs"].astype(str)
+        res_state = go.Figure(res_state)
+        sensors = sensors.groupby('attrs')
+        for tmp, group in sensors:
+            tmp = tmp.replace("'",'"')
+            d = json.loads(tmp)
+            try:
+                pos_x = pd.to_datetime(d["active since"]).tz_localize(None)          
+                first = res_state["data"][0]['x'][0]
+                first  = pd.to_datetime(first).tz_localize(None)
+                
+                last = res_state["data"][0]['x'][-1]
+                last  = pd.to_datetime(last).tz_localize(None)
+                
+                if first < pos_x and pos_x < last:
+                    res_state.add_vline(x=pos_x, line_width=3, line_dash="dash", line_color="green")
+            except:
+                pass
+            
+        return res_state, het_state, volt_state, bosch_state
+            
+    if "btn_search_date" == callback_context.triggered_id or ("selected-station" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date"):
         fbk_data = utils.query_custom(start_date, end_date)
+        LAST_CLICKED = "btn_search_date"
     else:
         fbk_data = cache_fbk_data(selected_period)
+        LAST_CLICKED = "selected-period"
         
-    
-    #print("madonna troia ",fbk_data)
     
     dfFBK1 = fbk_data[
         fbk_data["node_description"] == selected_station.split(" - ")[-1]
@@ -197,18 +287,18 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
 
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
     
-    if "btn_search_date" != callback_context.triggered_id:
+    if "btn_search_date" != callback_context.triggered_id and LAST_CLICKED != "btn_search_date":
         fbk_data_ResV = verify_period(selected_period, dfFBK1)
     else:
         fbk_data_ResV = dfFBK1
         
     #----------------------HEATER PLOT-----------------------------
     
-    resistance_plot = go.Figure()
+    heater_plot = go.Figure()
     # use hour as X axis
     if selected_period in ["last hour", "last week", "last day", "last month"]:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            resistance_plot.add_trace(
+            heater_plot.add_trace(
                 go.Scatter(
                     x=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
@@ -223,7 +313,7 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
     # use days as X axis
     else:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            resistance_plot.add_trace(
+            heater_plot.add_trace(
                 go.Scatter(
                     x=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
@@ -237,28 +327,28 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
             )
 
     # resistance_plot.update_yaxes(type="log", range=[1, 3])
-    resistance_plot.update_layout(
+    heater_plot.update_layout(
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
         title=dict(
             x=0.5,
-            text="Sensor Resistance (Ω)",
+            text="Heater Resistance (Ω)",
             xanchor="center",
             yanchor="top",
             font_family="Sans serif",
         ),
     )
-    resistance_plot.update_yaxes(title_text="", fixedrange=True)
+    heater_plot.update_yaxes(title_text="", fixedrange=True)
     
     #---------------------------RESISTANCE PLOT---------------------------
     
-    heater_plot = go.Figure()
+    resistance_plot = go.Figure()
 
     # use hour as X axis
     if selected_period in ["last hour", "last week", "last day", "last month"]:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            heater_plot.add_trace(
+            resistance_plot.add_trace(
                 go.Scatter(
                     x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
                         "ts"
@@ -272,7 +362,7 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
     # use days as X axis
     else:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            heater_plot.add_trace(
+            resistance_plot.add_trace(
                 go.Scatter(
                     x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
                         "Data"
@@ -284,20 +374,20 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
                 )
             )
 
-    heater_plot.update_layout(
+    resistance_plot.update_layout(
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
         font=dict(size=10),
         title=dict(
             x=0.5,
-            text="Heater Resistance (Ω)",
+            text="Sensor Resistance (Ω)",
             xanchor="center",
             yanchor="top",
             font_family="Sans serif",
         ),
     )
-    heater_plot.update_yaxes(title_text="", fixedrange=True, type='linear' if yaxis_type == 'Linear' else 'log')
+    resistance_plot.update_yaxes(title_text="", fixedrange=True, type='linear' if yaxis_type == 'Linear' else 'log')
 
     #---------------------------VOLTAGE PLOT---------------------------
     
@@ -349,7 +439,7 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
     volt_plot.update_yaxes(title_text="", fixedrange=True)
     
     #---------------------------BOSCH PLOT---------------------------
-    if "btn_search_date" != callback_context.triggered_id:
+    if "btn_search_date" != callback_context.triggered_id and LAST_CLICKED != "btn_search_date":
         fbk_data_bosch = verify_period_TPH(selected_period, dfFBK1)
     else:
         fbk_data_bosch = dfFBK1
@@ -416,7 +506,7 @@ def update_plots(selected_period, selected_station, yaxis_type, n_clicks, res_st
 
     bosch_plot.update_yaxes(fixedrange=True)
     
-    return [heater_plot, resistance_plot, volt_plot, bosch_plot]
+    return [resistance_plot, heater_plot, volt_plot, bosch_plot]
     
     
      

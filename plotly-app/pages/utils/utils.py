@@ -39,11 +39,11 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     #)
     
     #dataframe['sensor_description'] = dataframe.apply (lambda row: str(row['sensor_description'])+'_'+df_sensor.loc[int(row["sensor_description"])]["description"].split("_")[0] , axis=1)
-    try:
+    """try:
         dataframe['sensor_description'] = dataframe.apply (lambda row: row['sensor_description'].split('_')[0] +"_"+row['sensor_description'].split('_')[-1].split("-")[-1] ,axis=1)
     except Exception as e:
         print(e)
-        print("Usually this error with empty dataframe")
+        print("Usually this error with empty dataframe")"""
         
     dataframe.drop_duplicates(["sensor_description", "ts", "node_description"], inplace=True)
 
