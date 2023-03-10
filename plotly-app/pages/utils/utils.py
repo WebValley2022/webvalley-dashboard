@@ -27,8 +27,11 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe["ts"] = pd.to_datetime(dataframe["ts"], utc=True)
     # Set CEST Summer time zone
     dataframe["ts"] += pd.Timedelta(hours=2)
+    dataframe["heater_res"] = dataframe["heater_res"].astype(float) 
     dataframe["signal_res"] = dataframe["signal_res"].astype(float)
-    dataframe["heater_res"] = dataframe["heater_res"].astype(float)
+    
+    dataframe.rename(columns = {'heater_res':'signal_res', 'signal_res':'heater_res'}, inplace = True) #data are passed wrong in the db
+    
     dataframe["volt"] = dataframe["volt"].astype(float)
     dataframe["p"] = dataframe["p"].astype(float)
     dataframe["t"] = dataframe["t"].astype(float)
@@ -128,3 +131,86 @@ def query_custom(start_date, end_date)-> pd.DataFrame:
         return pd.DataFrame    
             
     return filter_fbk_data(fbk_data)
+
+
+
+
+def verify_period(period, df):
+    if period == "last 6 months":
+         # make hour average
+        df = df.groupby(
+            [pd.Grouper(key="ts", freq="3H"), pd.Grouper("sensor_description")]
+        ).mean(numeric_only=True)
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("180D")
+        df = df.reset_index()
+        return df
+    elif period == "last month":
+        # make hour average
+        df = df.groupby(
+            [pd.Grouper(key="ts", freq="1H"), pd.Grouper("sensor_description")]
+        ).mean(numeric_only=True)
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("30D")
+        df = df.reset_index()
+        return df
+    elif period == "last week":
+        # make hour average
+        df = df.groupby(
+            [pd.Grouper(key="ts", freq="1H"), pd.Grouper("sensor_description")]
+        ).mean(numeric_only=True)
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("7D")
+        df = df.reset_index()
+        return df
+    elif period == "last day":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("1D")
+        df = df.reset_index()
+        return df
+    elif period == "last hour":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("1h")
+        df = df.reset_index()
+
+    return df
+
+
+def verify_period_TPH(period, df):
+    if period == "last 6 months":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("180D")
+        df = df.reset_index()
+        return df
+    elif period == "last month":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("30D")
+        df = df.reset_index()
+        return df
+    elif period == "last week":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("7D")
+        df = df.reset_index()
+        return df
+    elif period == "last day":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("1D")
+        df = df.reset_index()
+        return df
+    elif period == "last hour":
+        df = df.reset_index()
+        df = df.set_index("ts")
+        df = df.last("1h")
+        df = df.reset_index()
+
+    return df
+

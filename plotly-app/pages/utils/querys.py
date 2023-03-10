@@ -13,7 +13,7 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '26 hours'
+where p.sensor_ts >= NOW() - INTERVAL '1 HOUR'
 order by p.sensor_ts;
 """
 
@@ -32,7 +32,7 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '1 days'
+where p.sensor_ts >= NOW() - interval '24 hour'
 order by p.sensor_ts;
 """
 query_week = """
@@ -50,11 +50,11 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '7 days'
+where p.sensor_ts >= NOW() - interval '7 days'
 order by p.sensor_ts;
 """
 
-query_week_test = """
+query_week_avg = """
 select
     n.description as node_description,
     s.name as sensor_description,
@@ -69,7 +69,7 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '7 days'
+where p.sensor_ts >= NOW() - interval '7 days'
 group by date_trunc('hour', p.sensor_ts), n.description, s.name
 order by date_trunc('hour', p.sensor_ts);
 """
@@ -88,10 +88,10 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '30 days'
+where p.sensor_ts >= NOW() - interval '30 days'
 order by p.sensor_ts;
 """
-query_month_test = """
+query_month_avg = """
 select
     n.description as node_description,
     s.name as sensor_description,
@@ -106,7 +106,7 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '30 days'
+where p.sensor_ts >= NOW() - interval '30 days'
 group by date_trunc('hour', p.sensor_ts), n.description, s.name
 order by date_trunc('hour', p.sensor_ts);
 """
@@ -125,7 +125,7 @@ from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '180 days'
+where p.sensor_ts >= NOW() - interval '180 days'
 order by p.sensor_ts;
 """
 query_6moths_test= """
@@ -133,7 +133,7 @@ SELECT
     n.description as node_description,
     s.name as sensor_description,
     TIMESTAMP WITH TIME ZONE 'epoch' +
-    INTERVAL '1 second' * round(extract('epoch' from p.sensor_ts) / 3600) * 3600 as ts,
+    INTERVAL '1 second' * round(extract('epoch' from p.sensor_ts) / 10800) * 10800 as ts,
     avg(pd.r1) as signal_res,
     avg(pd.r2) as heater_res,
     avg(pd.volt) as volt,
@@ -144,12 +144,12 @@ FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '180 days'
-GROUP BY round(extract('epoch' from p.sensor_ts) / 3600), n.description, s.name
-ORDER BY round(extract('epoch' from p.sensor_ts) / 3600);
+where p.sensor_ts >= NOW() - interval '180 days'
+GROUP BY round(extract('epoch' from p.sensor_ts) / 10800), n.description, s.name
+ORDER BY round(extract('epoch' from p.sensor_ts) / 10800);
 """
 
-query_6moths_test2 = """
+query_6moths_avg = """
 SELECT  n.description as node_description,
     s.name as sensor_description,
     min(p.sensor_ts) as ts,
@@ -163,7 +163,7 @@ FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= current_date at time zone 'UTC' - interval '180 days'
+where p.sensor_ts >= NOW() - interval '180 days'
 GROUP BY date_trunc('day', p.sensor_ts), 
     FLOOR(date_part('hour', p.sensor_ts) /3) , n.description, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""

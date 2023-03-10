@@ -23,8 +23,8 @@ cache = Cache(dash.get_app().server, config={
     'CACHE_DIR': 'cache-directory'
 })
 
-
-"""cache = Cache(dash.get_app().server, config={
+"""
+cache = Cache(dash.get_app().server, config={
     # try 'filesystem' if you don't want to setup redis
     'CACHE_TYPE': 'redis',
     'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
@@ -48,19 +48,19 @@ def get_data_day() -> pd.DataFrame:
 @cache.memoize(timeout=3600) #cached 1 hour
 def get_data_week() -> pd.DataFrame:
     print("NOT CACHED WEEK")
-    fbk_data=  load_data_from_psql(querys.query_week_test)
+    fbk_data=  load_data_from_psql(querys.query_week_avg)
     return utils.filter_fbk_data(fbk_data)
 
 @cache.memoize(timeout=864000)#cached 1 day
 def get_data_month() -> pd.DataFrame:
     print("NOT CACHED MONTH")
-    fbk_data = load_data_from_psql(querys.query_month_test)
+    fbk_data = load_data_from_psql(querys.query_month_avg)
     return utils.filter_fbk_data(fbk_data)
 
 @cache.memoize(timeout=604800) #cached 7 day  
 def get_data_6months() -> pd.DataFrame:
     print("NOT CACHED 6_MONTHS")
-    fbk_data = load_data_from_psql(querys.query_6moths_test2)
+    fbk_data = load_data_from_psql(querys.query_6moths_avg)
     return utils.filter_fbk_data(fbk_data)
 
 
@@ -209,7 +209,7 @@ def update_desc(station):
     station = appa1 if (station.split(" - ")[-1] == "S. Chiara") else appa2
     
     sensors = sensors.loc[(sensors["node_id"] == station) & (sensors["active"] == True)]
-    for key, row in sensors.iterrows():
+    for _ , row in sensors.iterrows():
         d[row["name"]] = row["description"]
         
     ll = []
@@ -287,16 +287,13 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
 
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
     
-    if "btn_search_date" != callback_context.triggered_id and LAST_CLICKED != "btn_search_date":
-        fbk_data_ResV = verify_period(selected_period, dfFBK1)
-    else:
-        fbk_data_ResV = dfFBK1
+    fbk_data_ResV = dfFBK1
         
     #----------------------HEATER PLOT-----------------------------
     
     heater_plot = go.Figure()
     # use hour as X axis
-    if selected_period in ["last hour", "last week", "last day", "last month"]:
+    if selected_period in ["last hour", "last week", "last day", "last month", "last 6 months"]:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             heater_plot.add_trace(
                 go.Scatter(
@@ -305,9 +302,8 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                     ]["ts"],
                     y=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
-                    ]["signal_res"],
+                    ]["heater_res"],
                     name=SensingMaterial,
-                    visible="legendonly" if SensingMaterial == "SnO2" else True,
                 )
             )
     # use days as X axis
@@ -320,13 +316,11 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                     ]["Data"],
                     y=fbk_data_ResV[
                         fbk_data_ResV["sensor_description"] == SensingMaterial
-                    ]["signal_res"],
+                    ]["heater_res"],
                     name=SensingMaterial,
-                    visible="legendonly" if SensingMaterial == "SnO2" else True,
                 )
             )
 
-    # resistance_plot.update_yaxes(type="log", range=[1, 3])
     heater_plot.update_layout(
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=20, b=0),
@@ -346,7 +340,7 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     resistance_plot = go.Figure()
 
     # use hour as X axis
-    if selected_period in ["last hour", "last week", "last day", "last month"]:
+    if selected_period in ["last hour", "last week", "last day", "last month", "last 6 months"]:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             resistance_plot.add_trace(
                 go.Scatter(
@@ -354,12 +348,12 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                         "ts"
                     ],
                     y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "heater_res"
+                        "signal_res"
                     ],
                     name=SensingMaterial,
                 )
             )
-    # use days as X axis
+    # use days as X axis maybe for perion bigger than 1 year?
     else:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             resistance_plot.add_trace(
@@ -368,7 +362,7 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                         "Data"
                     ],
                     y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "heater_res"
+                        "signal_res"
                     ],
                     name=SensingMaterial,
                 )
@@ -392,10 +386,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     #---------------------------VOLTAGE PLOT---------------------------
     
     volt_plot = go.Figure()
-    # fig.update_yaxes(type="log")
 
     # use hour as X axis
-    if selected_period in ["last hour", "last week", "last day", "last month"]:
+    if selected_period in ["last hour", "last week", "last day", "last month", "last 6 months"]:
         for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
             volt_plot.add_trace(
                 go.Scatter(
@@ -439,10 +432,8 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     volt_plot.update_yaxes(title_text="", fixedrange=True)
     
     #---------------------------BOSCH PLOT---------------------------
-    if "btn_search_date" != callback_context.triggered_id and LAST_CLICKED != "btn_search_date":
-        fbk_data_bosch = verify_period_TPH(selected_period, dfFBK1)
-    else:
-        fbk_data_bosch = dfFBK1
+ 
+    fbk_data_bosch = dfFBK1
         
     fbk_data_bosch.sort_values(by="ts", inplace=True)
     
@@ -507,87 +498,6 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     bosch_plot.update_yaxes(fixedrange=True)
     
     return [resistance_plot, heater_plot, volt_plot, bosch_plot]
-    
-    
-     
-     
-
-
-def verify_period(period, df):
-    if period == "last 6 months":
-        df = df.groupby(["Data", "sensor_description"]).mean(numeric_only= True)
-        df = df.reset_index()
-        df = df.set_index("Data")
-        df = df.last("180D")
-        df = df.reset_index()
-        return df
-    elif period == "last month":
-        # make hour average
-        df = df.groupby(
-            [pd.Grouper(key="ts", freq="1H"), pd.Grouper("sensor_description")]
-        ).mean(numeric_only=True)
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("30D")
-        df = df.reset_index()
-        return df
-    elif period == "last week":
-        # make hour average
-        df = df.groupby(
-            [pd.Grouper(key="ts", freq="1H"), pd.Grouper("sensor_description")]
-        ).mean(numeric_only=True)
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("7D")
-        df = df.reset_index()
-        return df
-    elif period == "last day":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("1D")
-        df = df.reset_index()
-        return df
-    elif period == "last hour":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("1h")
-        df = df.reset_index()
-
-    return df
-
-
-def verify_period_TPH(period, df):
-    if period == "last 6 months":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("180D")
-        df = df.reset_index()
-        return df
-    elif period == "last month":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("30D")
-        df = df.reset_index()
-        return df
-    elif period == "last week":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("7D")
-        df = df.reset_index()
-        return df
-    elif period == "last day":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("1D")
-        df = df.reset_index()
-        return df
-    elif period == "last hour":
-        df = df.reset_index()
-        df = df.set_index("ts")
-        df = df.last("1h")
-        df = df.reset_index()
-
-    return df
 
 
 layout = html.Div(
