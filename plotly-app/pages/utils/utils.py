@@ -30,7 +30,7 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe["heater_res"] = dataframe["heater_res"].astype(float) 
     dataframe["signal_res"] = dataframe["signal_res"].astype(float)
     
-    dataframe.rename(columns = {'heater_res':'signal_res', 'signal_res':'heater_res'}, inplace = True) #data are passed wrong in the db
+    #dataframe.rename(columns = {'heater_res':'signal_res', 'signal_res':'heater_res'}, inplace = True) #data are passed wrong in the db
     
     dataframe["volt"] = dataframe["volt"].astype(float)
     dataframe["p"] = dataframe["p"].astype(float)

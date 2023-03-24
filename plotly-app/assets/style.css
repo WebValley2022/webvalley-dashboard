@@ -8,8 +8,9 @@ html {
 }
 
 .section {
-  background-color: #eff4f9;
-  padding-top: 2%;
+  /*background-color: #eff4f9;*/
+  /*background-color: #F2F2F2;*/
+  /*padding-top: 2%;*/
   padding-left: 1%;
   height: 100%;
 }
@@ -50,6 +51,7 @@ html {
 
 .content {
   height: 100%;
+  background-color: #fbfcfe;
 }
 
 .transparent {
@@ -60,27 +62,133 @@ html {
   height: 90vh;
 }
 
-.fullHeight {
-  height: 100vh;
-}
 
 .dropdownWrapper {
   display: flex;
   flex-flow: row;
   justify-content: space-around;
-  margin: 0 0 10px 0;
+  margin: 0 0 20px 0;
 }
 
 .dropdownWrapper > * {
   width: 45%;
 }
-
+/*
 .DateRangePicker{
   float: right;
-}
+}*/
 
 .right{
   display: flex;
   flex-flow: row;
-  justify-content: flex-end;
+  /*justify-content: flex-end;*/
+  justify-content: center;
+}
+
+.pretty_container {
+  /*box-shadow:0px 1px 3px rgba(0,0,0,0.12), 0px 1px 2px rgba(0,0,0,0.24);*/
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius:15px;
+  border:1px solid;
+  border-color:rgba(0, 0, 0, 0.175);
+  background-color: white;
+}
+.toast-body > * {
+  margin-bottom: 15px;
+}
+
+/*override padding from lib*/
+.DateRangePickerInput__showClearDates{ 
+  padding-right : 0px;
+  border:1px solid #ccc;
+}
+
+.wrapper-sersors{
+  display: flex;
+  justify-content: center;
+  height: 70px;
+}
+
+.row {
+  --bs-gutter-y: 0rem;
+  margin-top: calc(-1 * var(--bs-gutter-y) + 0.5rem);
+}
+
+.toast {
+  --bs-toast-border-radius: 15px;
+}
+
+.card-sensors {
+  box-shadow : 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --bs-card-border-radius: 50%;
+  width: 3.5rem;
+  height:3.5rem;
+  margin-right:2rem;
+  /*font-size:12px;
+  font-weight:400;
+  --bs-card-spacer-y:0.5rem;
+  --bs-card-spacer-x:0.5rem;
+  background: linear-gradient(#f9f047, #0fd850);
+  --bs-card-border-width: 0px;*/
+  
+  --bs-card-border-width : 0px;
+  
+  transition: .3s;
+  cursor: pointer;
+
+}
+.card-body {
+  background-color: white;
+  border-radius: 50%;
+  margin: 1px;
+  padding: 0px;
+}
+
+
+
+
+.card-sensors:before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  padding: 3px;
+  border-radius: 50%; 
+  background: conic-gradient(
+    #0fd850,
+    #0000 ,       
+    #0fd850
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: intersect
+}
+.card-sensors:after {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  filter: blur(120px);
+  opacity: .5;
+}
+
+.card-sensors:before,
+.card-sensors:after {
+  transition:.5s, 99999s 99999s transform;
+}
+
+.card-sensors:hover {
+  transform: scale(1.15);
+}
+
+
+.card-sensors:hover:before,
+.card-sensors:hover:after {
+  transform: rotate(75000deg);
+  transition: .5s,600s linear transform;
+  
+}
+.card-sensors:before {
+  background-color: white;
+  
 }

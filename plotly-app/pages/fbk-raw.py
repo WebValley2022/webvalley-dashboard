@@ -10,6 +10,7 @@ import pandas as pd
 import logging
 import dash
 import os
+import dash_daq as daq
 
 from flask_caching import Cache
 
@@ -65,7 +66,7 @@ def get_data_6months() -> pd.DataFrame:
 
 
 def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
-    if os.getenv("DEBUG"):
+    if not os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()
@@ -83,7 +84,57 @@ def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
         print("QUERY TIME: ", datetime.now() - start)
         return fbk_data
 
-title = html.Div("Raw FBK Data", className="header-title")
+
+def make_card_sensor(sensor : str):
+    return dbc.Card(
+        dbc.CardBody(
+            [
+                html.H5(sensor, className="", style={"text-align":"center", "padding-top":"15px"}),
+                #html.Hr(style={"margin":"0.5rem"}),
+                #html.P("", id="desc-"+sensor),
+                #html.P("Saturated" if sensor == "S2" else "Good", id="status-"+sensor, style={"color": "red" if sensor == "S2" else "green"}),
+                
+            ]
+        ),
+        className="card-sensors",
+        style={},
+        id = f"card-{sensor}"
+    )
+    
+#def make_tooltip_sensor(sensor : str):
+#    return dbc.Tooltip(
+#        f"Tooltip on ",
+#        target=f"card-{sensor}",
+#        placement="bottom",
+#    )
+
+def make_tooltip_sensor(sensor : str):
+    return dbc.Popover(
+            [
+                dbc.PopoverBody([
+                        html.Div([
+                            html.P("", id="desc-"+sensor),
+                            html.P("Resistance: ", id=""),
+                            html.P("Voltage: ", id=""),
+                            html.P("Installed on: ", id=""),
+                            html.P("Saturated" if sensor == "S2" else "Good", id="status-"+sensor, style={"color": "red" if sensor == "S2" else "green"}),
+                        ],
+                            className="text-muted px-4 mt-4",
+                            id=f"desc-sens",
+                            
+                        )
+                        ,
+                ] ),
+            ],
+            target=f"card-{sensor}",
+            trigger="hover",
+            placement="bottom",
+        )
+    
+
+LAST_CLICKED = None
+
+title = html.Div("Raw FBK Data", className="header-title",style={"text-align":"center"})
 
 periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
 stations = ["Trento - S. Chiara", "Trento - via Bolzano"]
@@ -92,14 +143,6 @@ dropdown_station = dcc.Dropdown(
     stations, id="selected-station", className="dropdown", value=stations[0]
 )
 
-yaxis_type  = dcc.RadioItems(
-                ['Linear', 'Log'],
-                'Linear',
-                id='yaxis-type',
-                #inline=False,
-                className="radioitems",
-                labelStyle={'display': 'block'}
-            )
 date_range = dcc.DatePickerRange(
     id='my-date-picker-range',
     month_format='MMMM Y',
@@ -113,8 +156,11 @@ search = dbc.Button(
         className= "fas fa-search"
     ),
     id="btn_search_date",
-    class_name="btn btn-primary",
-    style={"width":"50px"}
+    color="secondary",
+    outline=True,
+    className="me-1",
+    size="sm",
+    style={"width":'100%',"border":'1px solid #ccc'}
 )
 
 download_btn = dbc.Button(
@@ -140,8 +186,7 @@ popovers = html.Div(
             [
                 dbc.PopoverHeader("Historical changes"),
                 dbc.PopoverBody([
-                        dcc.Checklist(options=['Show history changes'], value=['History'], id="check_history")
-                        ,html.Div([html.P("ass")],
+                        html.Div([html.P("ass")],
                             className="text-muted px-4 mt-4",
                             id="desc-sensors",
                         )
@@ -157,7 +202,56 @@ popovers = html.Div(
 )
 
 
-LAST_CLICKED = None
+
+
+dropdown_period = dcc.Dropdown(
+    periods, id="selected-period", className="dropdown", value=periods[4]
+)
+
+dropdown_wrapper = html.Div(
+    [dropdown_station, ], className="dropdownWrapper"
+)
+
+sensors_wrapper = html.Div(
+    [make_card_sensor("S"+str(s)) for s in range(1,9)] , className="wrapper-sersors" 
+)
+
+popovers_wrapper = html.Div(
+    [make_tooltip_sensor("S"+str(s)) for s in range(1,9)]
+)
+
+date_wrapper2 = html.Div(
+    [ date_range, search], className="right"
+)
+
+
+toast = dbc.Toast(
+                    [
+                        html.P("Filter by:",style={"font-weight":"bold"}),
+                        dropdown_period,
+                        date_range,
+                        search,
+                        #html.Br(),
+                        daq.ToggleSwitch(
+                            id="yaxis-type",
+                            label=["Linear","Log"],
+                            color="#9B51E0",
+                            size=40,
+                            value=False
+                        ),
+                        dcc.Checklist(options=[' Show history changes'], id="check_history"),
+                
+                    ],
+                    id="toast",
+                    header=html.P([html.I(className="fa-solid fa-gear"), " Settings"]),
+                    #body_style={"margin-bottom":"2rem"},
+                    style={"height":"100%"}
+                )
+
+header = html.Div(
+    [title, download_btn, download_it, dropdown_wrapper, sensors_wrapper, popovers_wrapper], className="section-header"
+)
+
 
 @callback(
     Output("download-fbk-raw", "data"),
@@ -170,29 +264,15 @@ def create_download_file(n_clicks):
     return dcc.send_data_frame(get_fbk_data().to_csv, "fbk_raw_data.csv")"""
     cache.clear()
 
-
-dropdown_period = dcc.Dropdown(
-    periods, id="selected-period", className="dropdown", value=periods[4]
-)
-
-dropdown_wrapper = html.Div(
-    [dropdown_station, dropdown_period], className="dropdownWrapper"
-)
-
-date_wrapper = html.Div(
-    [popovers, date_range, search], className="right"
-)
-
-option_wrapper = html.Div(
-    [yaxis_type, date_wrapper], className="dropdownWrapper"
-)
-header = html.Div(
-    [title, download_btn, download_it, dropdown_wrapper, option_wrapper], className="section-header"
-)
-
 @callback(
-    
-    Output("desc-sensors","children"),
+    #Output("desc-sensors","children"),
+    [
+        Output("desc-S1","children"),Output("desc-S2","children"),
+        Output("desc-S3","children"),Output("desc-S4","children"),
+        Output("desc-S5","children"),Output("desc-S6","children"),
+        Output("desc-S7","children"),Output("desc-S8","children"),
+        
+     ],
     Input("selected-station", "value"),
 )
 def update_desc(station):
@@ -217,15 +297,15 @@ def update_desc(station):
     for k, v in d.items():
         ll.append(html.P(f"{k}: {v}")) 
     
-    return ll
+    return [v for k, v in d.items()]
     
 
 @callback(
     [
     Output("resistance-plot", "figure"),
-    Output("top-right-plot", "figure"),
-    Output("middle-right-plot", "figure"),
-    Output("bottom-right-plot", "figure")],
+    Output("heater-plot", "figure"),
+    Output("voltage-plot", "figure"),
+    Output("bosch-plot", "figure")],
     
     Input("selected-period", "value"),
     Input("selected-station", "value"),
@@ -234,9 +314,9 @@ def update_desc(station):
     Input("check_history", "value"),
     
     [State("resistance-plot","figure"),
-    State("top-right-plot", "figure"),
-    State("middle-right-plot", "figure"),
-    State("bottom-right-plot", "figure"),
+    State("heater-plot", "figure"),
+    State("voltage-plot", "figure"),
+    State("bosch-plot", "figure"),
     State("my-date-picker-range","start_date"),
     State("my-date-picker-range","end_date"),]
 
@@ -244,8 +324,8 @@ def update_desc(station):
 def update_plots(selected_period, selected_station, yaxis_type, btn_date, history, res_state, het_state, volt_state, bosch_state, start_date, end_date):
     global LAST_CLICKED
     
-    if "yaxis-type" == callback_context.triggered_id:
-        res_state["layout"]["yaxis"]["type"] = ('linear' if yaxis_type == 'Linear' else 'log')
+    if "yaxis-type" == callback_context.triggered_id:    
+        res_state["layout"]["yaxis"]["type"] = ('linear' if not yaxis_type else 'log')
         return res_state, het_state, volt_state, bosch_state
     
     elif "check_history" == callback_context.triggered_id:
@@ -267,8 +347,11 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                 last  = pd.to_datetime(last).tz_localize(None)
                 
                 if first < pos_x and pos_x < last:
-                    res_state.add_vline(x=pos_x, line_width=3, line_dash="dash", line_color="green")
-            except:
+                    if history:
+                        res_state.add_vline(x=pos_x, line_width=3, line_dash="dash", line_color="green")
+                    else:
+                        res_state.layout.shapes = None
+            except Exception as e:
                 pass
             
         return res_state, het_state, volt_state, bosch_state
@@ -288,7 +371,65 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
     
     fbk_data_ResV = dfFBK1
-        
+    
+    #---------------------------RESISTANCE PLOT---------------------------
+    
+    resistance_plot = go.Figure()
+
+    # use hour as X axis
+    if selected_period in ["last hour", "last week", "last day", "last month", "last 6 months"]:
+        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
+            resistance_plot.add_trace(
+                go.Scatter(
+                    x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
+                        "ts"
+                    ],
+                    y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
+                        "signal_res"
+                    ],
+                    name=SensingMaterial,
+                )
+            )
+    # use days as X axis maybe for perion bigger than 1 year?
+    else:
+        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
+            resistance_plot.add_trace(
+                go.Scatter(
+                    x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
+                        "Data"
+                    ],
+                    y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
+                        "signal_res"
+                    ],
+                    name=SensingMaterial,
+                )
+            )
+
+    resistance_plot.update_layout(
+        #legend_title_text="Sensing Material",
+        plot_bgcolor="#fefefe",
+        #paper_bgcolor="#fefefe",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=0, r=5, t=20, b=0),
+        #plot_bgcolor="white",
+        #font=dict(size=10),
+        title=dict(
+            x=0.5,
+            text="Sensor Resistance (Ω)",
+            xanchor="center",
+            yanchor="top",
+            font_family="Sans serif",
+        ),
+        legend=dict(
+            orientation="h",
+            entrywidth=50,
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
+    resistance_plot.update_yaxes(title_text="", fixedrange=True, type= 'linear' if not yaxis_type else 'log')
     #----------------------HEATER PLOT-----------------------------
     
     heater_plot = go.Figure()
@@ -325,6 +466,8 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(size=10),
         title=dict(
             x=0.5,
             text="Heater Resistance (Ω)",
@@ -335,54 +478,6 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     )
     heater_plot.update_yaxes(title_text="", fixedrange=True)
     
-    #---------------------------RESISTANCE PLOT---------------------------
-    
-    resistance_plot = go.Figure()
-
-    # use hour as X axis
-    if selected_period in ["last hour", "last week", "last day", "last month", "last 6 months"]:
-        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            resistance_plot.add_trace(
-                go.Scatter(
-                    x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "ts"
-                    ],
-                    y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "signal_res"
-                    ],
-                    name=SensingMaterial,
-                )
-            )
-    # use days as X axis maybe for perion bigger than 1 year?
-    else:
-        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            resistance_plot.add_trace(
-                go.Scatter(
-                    x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "Data"
-                    ],
-                    y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "signal_res"
-                    ],
-                    name=SensingMaterial,
-                )
-            )
-
-    resistance_plot.update_layout(
-        legend_title_text="Sensing Material",
-        margin=dict(l=0, r=5, t=20, b=0),
-        plot_bgcolor="white",
-        font=dict(size=10),
-        title=dict(
-            x=0.5,
-            text="Sensor Resistance (Ω)",
-            xanchor="center",
-            yanchor="top",
-            font_family="Sans serif",
-        ),
-    )
-    resistance_plot.update_yaxes(title_text="", fixedrange=True, type='linear' if yaxis_type == 'Linear' else 'log')
-
     #---------------------------VOLTAGE PLOT---------------------------
     
     volt_plot = go.Figure()
@@ -420,6 +515,7 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         legend_title_text="Sensing Material",
         margin=dict(l=0, r=5, t=20, b=0),
         plot_bgcolor="white",
+        paper_bgcolor="rgba(0,0,0,0)",
         font=dict(size=10),
         title=dict(
             x=0.5,
@@ -474,6 +570,7 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     bosch_plot.update_layout(
         margin=dict(l=0, r=5, t=50, b=10),
         plot_bgcolor="white",
+        paper_bgcolor="rgba(0,0,0,0)",
         font=dict(size=10),
         yaxis=dict(title="Temp (°C) & RH (%)"),
         yaxis2=dict(title="pressure (psi)", overlaying="y", side="right"),
@@ -512,46 +609,66 @@ layout = html.Div(
                             "displayModeBar": False,
                             "displaylogo": False,
                         },
-                        style=dict(height="77vh"),
+                        #style=dict(height="77vh"),
+                        style={"height":"55vh",},
+                        className="pretty_container",
                     ),
-                    lg=7,
-                    xl=8,
-                ),
+                    #lg=7,
+                    #xl=8,
+                style={"width":"80%"}),
                 dbc.Col(
                     [
-                        dcc.Graph(
-                            id="top-right-plot",
-                            config={
-                                "displayModeBar": False,
-                                "displaylogo": False,
-                            },
-                            style=dict(height="25vh"),
-                        ),
-                        html.Div(style=dict(height="1vh"), className="transparent"),
-                        dcc.Graph(
-                            id="middle-right-plot",
-                            className="side-plot",
-                            config={
-                                "displayModeBar": False,
-                                "displaylogo": False,
-                            },
-                            style=dict(height="25vh"),
-                        ),
-                        html.Div(style=dict(height="1vh"), className="transparent"),
-                        dcc.Graph(
-                            id="bottom-right-plot",
-                            className="side-plot",
-                            config={
-                                "displayModeBar": False,
-                                "displaylogo": False,
-                            },
-                            style=dict(height="25vh"),
-                        ),
+                        toast,
                     ],
-                    md=5,
-                    lg=5,
-                    xl=4,
+                    width=1,
+                    style={"min-width":"200px"}  
                 ),
+                
+            ]),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        dcc.Graph(
+                            id="heater-plot",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="25vh"),
+                            className="pretty_container",
+                        ),],
+                    width=4),
+                dbc.Col([
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        dcc.Graph(
+                            id="voltage-plot",
+                            className="side-plot pretty_container",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="25vh"),
+                        ),],
+                    width=4),
+                dbc.Col([
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        dcc.Graph(
+                            id="bosch-plot",
+                            className="side-plot pretty_container",
+                            config={
+                                "displayModeBar": False,
+                                "displaylogo": False,
+                            },
+                            style=dict(height="25vh"),
+                        ),],
+                    width=4),
+                    #],
+                    #md=5,
+                    #lg=5,
+                    #xl=4,
+                #),
             ],
         ),
     ],

@@ -13,73 +13,68 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME],
 )
 
-
-
 sidebar = html.Div(
     [
         html.Div(
             [
-                html.A(
-                    href="/",
-                    children=[
-                        html.Img(src="/assets/img/logo.png", className="sidebar-img")
-                    ],
-                ),
+                # width: 3rem ensures the logo is the exact width of the
+                # collapsed sidebar (accounting for padding)
+                html.Img(src="/assets/img/logo_cut.png", style={"width": "5rem"}),
+                html.H2("Airwatching"),
             ],
-            className="sidebar-img-div",
+            className="sidebar-header",
         ),
-        html.Hr(),
+        html.Hr(className="sidebar-hr"),
         dbc.Nav(
             [
                 dbc.NavLink(
-                    "Raw FBK Data",
+                    [
+                        html.I(className="fa-solid fa-square-poll-vertical fa-2x"),
+                        html.Br(), 
+                        html.Span("Raw FBK Data")
+                    ],
                     href="/",
                     active="exact",
-                    class_name="sidebar-link",
+                    style={"text-align": "center"}
+                    
                 ),
                 dbc.NavLink(
-                    "Fitted FBK Data",
+                    [
+                        html.I(className="fa-solid fa-chart-line fa-2x"),
+                        html.Br(), 
+                        html.Span("Fitted FBK Data"),
+                    ],
                     href="/fbk",
                     active="exact",
-                    class_name="sidebar-link",
+                    style={"text-align": "center"}
                 ),
                 dbc.NavLink(
-                    "APPA Data", href="/appa", active="exact", class_name="sidebar-link"
+                    [
+                        html.I(className="fa-solid fa-smog fa-2x"),
+                        html.Br(), 
+                        html.Span("APPA Data"),
+                    ],
+                    href="/appa",
+                    active="exact",
+                    style={"text-align": "center"}
                 ),
-                html.Hr(),
             ],
             vertical=True,
             pills=True,
-            className="sidebar-btns-div",
         ),
+        html.Hr(className="sidebar-hr"),
         html.Div(
             html.Img(src="/assets/img/fbk-logo.png", className="fbk-logo"),
             className="fbk-logo-div",
         ),
     ],
-    className="fullHeight",
+    className="sidebar",
 )
 
-app.layout = html.Div(
-    [
-        dcc.Location(id="url"),
-        dbc.Row(
-            [
-                dbc.Col(sidebar, lg=3, xl=2, md=3, className="sidebar"),
-                dbc.Col(
-                    dash.page_container,
-                    lg=9,
-                    xl=10,
-                    md=9,
-                    class_name="fullHeightAndPadding",
-                ),
-            ],
-            className="fullHeight",
-        ),
-    ],
-    className="fullHeight",
-)
 
+content = html.Div([dash.page_container], id="page-content", className="content")
+
+app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 server = app.server
 if __name__ == "__main__":
     if os.getenv("DEBUG"):
