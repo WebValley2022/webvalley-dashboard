@@ -1,3 +1,23 @@
+def query_params(node) :
+    return f"""
+select
+    n.description as node_description,
+    s.name as sensor_description,
+    p.sensor_ts as ts,
+    pd.r1 as heater_res,
+    pd.r2 as signal_res,
+    pd.volt as volt,
+    p.attrs::json->'P' as p,
+    p.attrs::json->'T' as t,
+    p.attrs::json->'RH' as rh
+from packet_data pd
+    left join packet p on p.id = pd.packet_id
+    left join sensor s on s.id = pd.sensor_id
+    left join node n on n.id = p.node_id
+where n.id ={node}
+order by p.sensor_ts  DESC limit 8;
+"""
+
 query_hour = """
 select
     n.description as node_description,

@@ -5,6 +5,7 @@
 html {
   overflow-y: auto;
   overflow-x: hidden;
+  font-size: 0.6vw;
 }
 
 .section {
@@ -106,7 +107,7 @@ html {
 .wrapper-sersors{
   display: flex;
   justify-content: center;
-  height: 70px;
+  margin-bottom: 1.25rem;
 }
 
 .row {
@@ -124,12 +125,6 @@ html {
   width: 3.5rem;
   height:3.5rem;
   margin-right:2rem;
-  /*font-size:12px;
-  font-weight:400;
-  --bs-card-spacer-y:0.5rem;
-  --bs-card-spacer-x:0.5rem;
-  background: linear-gradient(#f9f047, #0fd850);
-  --bs-card-border-width: 0px;*/
   
   --bs-card-border-width : 0px;
   
@@ -145,8 +140,6 @@ html {
 }
 
 
-
-
 .card-sensors:before {
   content: "";
   position: absolute;
@@ -154,9 +147,9 @@ html {
   padding: 3px;
   border-radius: 50%; 
   background: conic-gradient(
-    #0fd850,
     #0000 ,       
-    #0fd850
+    #0000,
+    #0000
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -164,6 +157,24 @@ html {
   -webkit-mask-composite: xor;
           mask-composite: intersect
 }
+
+.card-sensors-green:before {
+  background: conic-gradient(
+     #0000 ,       
+    #0fd850,
+    #0fd850
+  );
+}
+
+.card-sensors-red:before {
+  background: conic-gradient(
+    #0000 ,       
+    red,
+    red
+  );
+}
+
+
 .card-sensors:after {
   content: "";
   position: absolute;
@@ -171,23 +182,48 @@ html {
   filter: blur(120px);
   opacity: .5;
 }
+/*
+.card-sensors:before,
+.card-sensors:after {
+  transition:.5s, 99999s 99999s transform ;
+}*/
+
+.card-sensors:hover {
+  transform: scale(1.15);
+}
+
+/*
+.card-sensors:hover:before,
+.card-sensors:hover:after {
+  transform: rotate(360deg) ;
+  transition: .5s, 1s linear transform;
+  
+}*/
+
+
 
 .card-sensors:before,
 .card-sensors:after {
-  transition:.5s, 99999s 99999s transform;
+  animation: rotate 20s linear infinite;
+  transition: .5s;
 }
 
 .card-sensors:hover {
   transform: scale(1.15);
 }
 
-
-.card-sensors:hover:before,
-.card-sensors:hover:after {
-  transform: rotate(75000deg);
-  transition: .5s,600s linear transform;
-  
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
+
+
+
+
 .card-sensors:before {
   background-color: white;
   

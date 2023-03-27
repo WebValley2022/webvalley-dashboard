@@ -66,7 +66,7 @@ def get_data_6months() -> pd.DataFrame:
 
 
 def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
-    if not os.getenv("DEBUG"):
+    if os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()
@@ -88,53 +88,41 @@ def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
 def make_card_sensor(sensor : str):
     return dbc.Card(
         dbc.CardBody(
-            [
-                html.H5(sensor, className="", style={"text-align":"center", "padding-top":"15px"}),
-                #html.Hr(style={"margin":"0.5rem"}),
-                #html.P("", id="desc-"+sensor),
-                #html.P("Saturated" if sensor == "S2" else "Good", id="status-"+sensor, style={"color": "red" if sensor == "S2" else "green"}),
-                
-            ]
+                html.H5(sensor, className="", style={"text-align":"center", "padding-top":"0.9rem"})
         ),
         className="card-sensors",
-        style={},
         id = f"card-{sensor}"
     )
-    
-#def make_tooltip_sensor(sensor : str):
-#    return dbc.Tooltip(
-#        f"Tooltip on ",
-#        target=f"card-{sensor}",
-#        placement="bottom",
-#    )
 
 def make_tooltip_sensor(sensor : str):
     return dbc.Popover(
-            [
-                dbc.PopoverBody([
-                        html.Div([
-                            html.P("", id="desc-"+sensor),
-                            html.P("Resistance: ", id=""),
-                            html.P("Voltage: ", id=""),
-                            html.P("Installed on: ", id=""),
-                            html.P("Saturated" if sensor == "S2" else "Good", id="status-"+sensor, style={"color": "red" if sensor == "S2" else "green"}),
-                        ],
-                            className="text-muted px-4 mt-4",
-                            id=f"desc-sens",
-                            
-                        )
-                        ,
-                ] ),
-            ],
+            [],
             target=f"card-{sensor}",
             trigger="hover",
             placement="bottom",
+            id=f"toltip-{sensor}"
         )
+    
+def saturated(station):
+    df = get_data_hours()
+    d= {
+        "S1_ID":None, "S2_ID":None,
+        "S3_ID":None, "S4_ID":None,
+        "S5_ID":None, "S6_ID":None,
+        "S7_ID":None, "S8_ID":None,
+    }
+    for s in d.keys():
+        tmp = df.loc[(df["sensor_description"]==s) & (df["node_description"] == station.split(" - ")[-1])].reset_index()
+        if (tmp['signal_res'] == tmp['signal_res'][0]).all():
+            d[s]= True
+        else:
+            d[s]= False
+    return d
     
 
 LAST_CLICKED = None
 
-title = html.Div("Raw FBK Data", className="header-title",style={"text-align":"center"})
+title = html.Div("Raw FBK Data", className="header-title",style={"text-align":"center","margin-bottom": "0.25rem"})
 
 periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
 stations = ["Trento - S. Chiara", "Trento - via Bolzano"]
@@ -172,38 +160,6 @@ download_btn = dbc.Button(
 download_it = dcc.Download(id="download-fbk-raw")
 
 
-popovers = html.Div(
-    [
-        dbc.Button(
-            children= html.I(
-                className= "fa-solid fa-circle-info"
-            ),
-            id="btn-info",
-            n_clicks=0,
-            color="light"
-        ),
-        dbc.Popover(
-            [
-                dbc.PopoverHeader("Historical changes"),
-                dbc.PopoverBody([
-                        html.Div([html.P("ass")],
-                            className="text-muted px-4 mt-4",
-                            id="desc-sensors",
-                        )
-                        ,
-                ] ),
-            ],
-            target="btn-info",
-            trigger="legacy",
-            placement="bottom",
-            style= {"min-width": "330px"}
-        ),
-    ],style= {"margin-right":"110px"}
-)
-
-
-
-
 dropdown_period = dcc.Dropdown(
     periods, id="selected-period", className="dropdown", value=periods[4]
 )
@@ -220,14 +176,11 @@ popovers_wrapper = html.Div(
     [make_tooltip_sensor("S"+str(s)) for s in range(1,9)]
 )
 
-date_wrapper2 = html.Div(
-    [ date_range, search], className="right"
-)
 
 
 toast = dbc.Toast(
                     [
-                        html.P("Filter by:",style={"font-weight":"bold"}),
+                        html.H4("Filter by:",style={"font-weight":"bold"}),
                         dropdown_period,
                         date_range,
                         search,
@@ -239,7 +192,7 @@ toast = dbc.Toast(
                             size=40,
                             value=False
                         ),
-                        dcc.Checklist(options=[' Show history changes'], id="check_history"),
+                        dcc.Checklist(options=[' Show history changes'], id="check_history", style={"font-size": "14px"}),
                 
                     ],
                     id="toast",
@@ -249,7 +202,7 @@ toast = dbc.Toast(
                 )
 
 header = html.Div(
-    [title, download_btn, download_it, dropdown_wrapper, sensors_wrapper, popovers_wrapper], className="section-header"
+    [title, download_btn, download_it, sensors_wrapper, dropdown_wrapper,  popovers_wrapper], className="section-header"
 )
 
 
@@ -264,13 +217,32 @@ def create_download_file(n_clicks):
     return dcc.send_data_frame(get_fbk_data().to_csv, "fbk_raw_data.csv")"""
     cache.clear()
 
+
 @callback(
-    #Output("desc-sensors","children"),
     [
-        Output("desc-S1","children"),Output("desc-S2","children"),
-        Output("desc-S3","children"),Output("desc-S4","children"),
-        Output("desc-S5","children"),Output("desc-S6","children"),
-        Output("desc-S7","children"),Output("desc-S8","children"),
+        Output("card-S1","className"),Output("card-S2","className"),
+        Output("card-S3","className"),Output("card-S4","className"),
+        Output("card-S5","className"),Output("card-S6","className"),
+        Output("card-S7","className"),Output("card-S8","className"),
+        
+     ],
+    Input("selected-station", "value"),
+)
+def update_color(station):
+    ll = []
+    d_saturation = saturated(station)
+    for s in range(1,9):
+        ll.append("card-sensors card-sensors-red" if d_saturation["S"+str(s)+"_ID"] else "card-sensors card-sensors-green")
+        
+    return ll
+        
+ 
+@callback(
+    [
+        Output("toltip-S1","children"),Output("toltip-S2","children"),
+        Output("toltip-S3","children"),Output("toltip-S4","children"),
+        Output("toltip-S5","children"),Output("toltip-S6","children"),
+        Output("toltip-S7","children"),Output("toltip-S8","children"),
         
      ],
     Input("selected-station", "value"),
@@ -278,26 +250,55 @@ def create_download_file(n_clicks):
 def update_desc(station):
     appa1 = 1
     appa2 = 6
-    sensors = load_data_from_psql(querys.query_sensor)
-    d = {
+    sensors = load_data_from_psql(querys.query_history_sensor)
+    d= {
         "S1_ID":None, "S2_ID":None,
         "S3_ID":None, "S4_ID":None,
         "S5_ID":None, "S6_ID":None,
         "S7_ID":None, "S8_ID":None,
     }
     
+    d_saturation = saturated(station)
     station = appa1 if (station.split(" - ")[-1] == "S. Chiara") else appa2
-    
+    params = load_data_from_psql(querys.query_params(station))
     sensors = sensors.loc[(sensors["node_id"] == station) & (sensors["active"] == True)]
     for _ , row in sensors.iterrows():
-        d[row["name"]] = row["description"]
-        
-    ll = []
-      
-    for k, v in d.items():
-        ll.append(html.P(f"{k}: {v}")) 
+        s_id = row["name"]
+        try:
+            date = row["attrs"]["active since"]
+        except:
+            date = ""
     
-    return [v for k, v in d.items()]
+        d[row["name"]] = dict(
+                                description = row["description"], 
+                                active_since = date,
+                                res = params.loc[params["sensor_description"] == s_id]["heater_res"].values[0],
+                                volt= params.loc[params["sensor_description"] == s_id]["volt"].values[0],
+                            )    
+    #print(d)
+    list_tooltips = []
+    for s in range(1,9):
+        s=str(s)
+        id= "S"+s+"_ID"
+        body = dbc.PopoverBody([
+                            html.Div([
+                                html.P(f"{d[id]['description']}", id="desc-S"+s),
+                                html.P(f"Resistance: {d[id]['res']}", id="res-S"+s),
+                                html.P(f"Voltage: {d[id]['volt']}", id="volt-S"+s),
+                                html.P(f"Installed on: {d[id]['active_since']}", id="inst-S"+s),
+                                html.P("Saturated" if d_saturation[id] else "Good", id="status-S"+s, style={"color": "red" if d_saturation[id] else "green"}),
+                            ],
+                                className="text-muted px-4 mt-4",
+                                id=f"body-pop-S{s}",
+                                
+                            )
+                            ,
+                    ] ,style={"font-size":"14px"})
+        list_tooltips.append(body)
+    return list_tooltips
+        
+        
+    
     
 
 @callback(
@@ -429,7 +430,8 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
             x=1
         )
     )
-    resistance_plot.update_yaxes(title_text="", fixedrange=True, type= 'linear' if not yaxis_type else 'log')
+    
+    resistance_plot.update_yaxes(title_text="",  type= 'linear' if not yaxis_type else 'log')
     #----------------------HEATER PLOT-----------------------------
     
     heater_plot = go.Figure()
@@ -575,7 +577,7 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         yaxis=dict(title="Temp (°C) & RH (%)"),
         yaxis2=dict(title="pressure (psi)", overlaying="y", side="right"),
         legend={
-            "x": 0.1,
+            "x": 0,
             "y": 1.4,
             "yanchor": "top",
             "xanchor": "left",
