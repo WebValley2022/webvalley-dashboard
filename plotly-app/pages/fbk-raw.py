@@ -201,6 +201,13 @@ toast = dbc.Toast(
                     style={"height":"100%"}
                 )
 
+def make_btn_fscreen(id :str):
+    return dbc.Button(
+                    children= html.I(className= "fa-solid fa-compress fa-2xl", style={"color":"#4c8af6"}),
+                    className="full-screen",
+                    id=id,
+                )
+
 header = html.Div(
     [title, download_btn, download_it, sensors_wrapper, dropdown_wrapper,  popovers_wrapper], className="section-header"
 )
@@ -479,6 +486,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         ),
     )
     heater_plot.update_yaxes(title_text="", fixedrange=True)
+    heater_plot.update_layout(modebar=dict(
+        bgcolor="#ffffff"
+    ))
     
     #---------------------------VOLTAGE PLOT---------------------------
     
@@ -528,6 +538,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         ),
     )
     volt_plot.update_yaxes(title_text="", fixedrange=True)
+    volt_plot.update_layout(modebar=dict(
+        bgcolor="#ffffff"
+    ))
     
     #---------------------------BOSCH PLOT---------------------------
  
@@ -595,13 +608,58 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
     )
 
     bosch_plot.update_yaxes(fixedrange=True)
+    bosch_plot.update_layout(modebar=dict(
+        bgcolor="#ffffff"
+    ))
     
     return [resistance_plot, heater_plot, volt_plot, bosch_plot]
 
 
+@callback(
+    [Output("modal-body", "figure"), Output("modal-centered", "is_open") ],
+    
+    [Input("heater-fs", "n_clicks"),
+     Input("volt-fs", "n_clicks"),
+     Input("bosch-fs", "n_clicks")],
+    
+    [State("modal-centered", "is_open"),
+     State("heater-plot", "figure"),
+     State("voltage-plot", "figure"),
+     State("bosch-plot", "figure"),]
+)
+def toggle_modal(heater_fs,volt_fs, bosch_fs, is_open, heater_plot, volt_plot, bosch_plot):
+    if heater_fs or volt_fs or bosch_fs:
+        if "heater-fs" == callback_context.triggered_id:
+            heater_plot = go.Figure(heater_plot)
+            heater_plot.update_yaxes(fixedrange=False)
+            return [heater_plot, not is_open]
+        
+        elif "volt-fs" == callback_context.triggered_id:
+            volt_plot = go.Figure(volt_plot)
+            volt_plot.update_yaxes(fixedrange=False)
+            return [volt_plot, not is_open]
+        
+        elif "bosch-fs" == callback_context.triggered_id:
+            bosch_plot = go.Figure(bosch_plot)
+            bosch_plot.update_yaxes(fixedrange=False)
+            return [bosch_plot, not is_open]
+    return [None, is_open]
+
+modal = dbc.Modal(
+            [
+                dbc.ModalHeader(close_button=True),
+                dbc.ModalBody(dcc.Graph(id="modal-body",style={"height":"55vh",},)),
+            ],
+            id="modal-centered",
+            centered=True,
+            className="fullscreen-modal",
+            is_open=False,
+        )
+
 layout = html.Div(
     [
         header,
+        modal,
         dbc.Row(
             [
                 dbc.Col(
@@ -631,7 +689,7 @@ layout = html.Div(
             [
                 dbc.Col(
                     [
-                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        html.Div(children=make_btn_fscreen("heater-fs"),style=dict(height="1vh"), className="transparent"),
                         dcc.Graph(
                             id="heater-plot",
                             config={
@@ -643,7 +701,7 @@ layout = html.Div(
                         ),],
                     width=4),
                 dbc.Col([
-                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        html.Div(children=make_btn_fscreen("volt-fs"),style=dict(height="1vh"), className="transparent"),
                         dcc.Graph(
                             id="voltage-plot",
                             className="side-plot pretty_container",
@@ -655,7 +713,7 @@ layout = html.Div(
                         ),],
                     width=4),
                 dbc.Col([
-                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        html.Div(children=make_btn_fscreen("bosch-fs"),style=dict(height="1vh"), className="transparent"),
                         dcc.Graph(
                             id="bosch-plot",
                             className="side-plot pretty_container",

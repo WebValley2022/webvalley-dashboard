@@ -228,3 +228,30 @@ html {
   background-color: white;
   
 }
+
+.full-screen{
+  position: relative;
+  float: right;
+  margin-right: -1%;
+  margin-top: 1%;
+  background-color: transparent;
+  border: 0px;
+  z-index: 1;
+  padding: 0;
+  --bs-btn-active-bg: transparent;
+}
+
+.full-screen:hover{
+  transform: scale(1.10);
+  background-color: transparent;
+}
+
+.full-screen:focus-visible{
+  background-color: transparent;
+  border: 0px;
+  box-shadow: none;
+}
+
+.fullscreen-modal{
+  max-width: 90%;
+}
