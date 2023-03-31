@@ -232,8 +232,8 @@ html {
 .full-screen{
   position: relative;
   float: right;
-  margin-right: -1%;
-  margin-top: 1%;
+  margin-right: 12px;
+  margin-top: 12px;
   background-color: transparent;
   border: 0px;
   z-index: 1;

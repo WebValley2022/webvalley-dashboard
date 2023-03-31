@@ -203,7 +203,7 @@ toast = dbc.Toast(
 
 def make_btn_fscreen(id :str):
     return dbc.Button(
-                    children= html.I(className= "fa-solid fa-compress fa-2xl", style={"color":"#4c8af6"}),
+                    children= html.I(className= "fa-solid fa-expand fa-xl", style={"color":"rgb(0 94 255 / 69%)",}),
                     className="full-screen",
                     id=id,
                 )
@@ -396,20 +396,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                         "signal_res"
                     ],
                     name=SensingMaterial,
-                )
-            )
-    # use days as X axis maybe for perion bigger than 1 year?
-    else:
-        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            resistance_plot.add_trace(
-                go.Scatter(
-                    x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "Data"
-                    ],
-                    y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "signal_res"
-                    ],
-                    name=SensingMaterial,
+                    line=dict(
+                        width=1.5
+                    )
                 )
             )
 
@@ -454,22 +443,12 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                         fbk_data_ResV["sensor_description"] == SensingMaterial
                     ]["heater_res"],
                     name=SensingMaterial,
+                    line=dict(
+                        width=1.5
+                    )
                 )
             )
-    # use days as X axis
-    else:
-        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            heater_plot.add_trace(
-                go.Scatter(
-                    x=fbk_data_ResV[
-                        fbk_data_ResV["sensor_description"] == SensingMaterial
-                    ]["Data"],
-                    y=fbk_data_ResV[
-                        fbk_data_ResV["sensor_description"] == SensingMaterial
-                    ]["heater_res"],
-                    name=SensingMaterial,
-                )
-            )
+
 
     heater_plot.update_layout(
         legend_title_text="Sensing Material",
@@ -477,6 +456,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         plot_bgcolor="white",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(size=10),
+        legend=dict(
+            y=0.9,
+        ),
         title=dict(
             x=0.5,
             text="Heater Resistance (Ω)",
@@ -506,21 +488,10 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                         "volt"
                     ],
                     name=SensingMaterial,
+                    line=dict(
+                        width=1.5
+                    )
                 )
-            )
-    # use days as X axis
-    else:
-        for SensingMaterial, group in fbk_data_ResV.groupby("sensor_description"):
-            volt_plot.add_trace(
-                go.Scatter(
-                    x=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "Data"
-                    ],
-                    y=fbk_data_ResV[fbk_data_ResV["sensor_description"] == SensingMaterial][
-                        "volt"
-                    ],
-                    name=SensingMaterial,
-                ),
             )
 
     volt_plot.update_layout(
@@ -529,8 +500,11 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         plot_bgcolor="white",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(size=10),
+        legend=dict(
+            y=0.9,
+        ),
         title=dict(
-            x=0.5,
+            x=0.5, 
             text="Heater Voltage (V)",
             xanchor="center",
             yanchor="top",
@@ -556,6 +530,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         mode="lines",
         yaxis="y1",
         hovertemplate="Parameter = Temperature<br>Value = %{y}<br>Date = %{x}<extra></extra>",
+        line=dict(
+                        width=1.5
+                    )
     )
 
     # Humidity graph
@@ -566,6 +543,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         mode="lines",
         yaxis="y1",
         hovertemplate="Parameter = Humidity<br>Value = %{y}<br>Date = %{x}<extra></extra>",
+        line=dict(
+                        width=1.5
+                    )
     )
 
     # Pressure graph
@@ -576,6 +556,9 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         yaxis="y2",
         mode="lines",
         hovertemplate="Parameter = Pressure<br>Value = %{y}<br>Date = %{x}<extra></extra>",
+        line=dict(
+                        width=1.5
+                    )
     )
 
     data = [trace1, trace2, trace3]
@@ -591,8 +574,8 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         yaxis2=dict(title="pressure (psi)", overlaying="y", side="right"),
         legend={
             "x": 0,
-            "y": 1.4,
-            "yanchor": "top",
+            "y": 1,
+            "yanchor": "bottom",
             "xanchor": "left",
             "orientation": "h",
             "bgcolor": "rgba(0,0,0,0)",
@@ -689,7 +672,8 @@ layout = html.Div(
             [
                 dbc.Col(
                     [
-                        html.Div(children=make_btn_fscreen("heater-fs"),style=dict(height="1vh"), className="transparent"),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        make_btn_fscreen("heater-fs"),
                         dcc.Graph(
                             id="heater-plot",
                             config={
@@ -701,7 +685,8 @@ layout = html.Div(
                         ),],
                     width=4),
                 dbc.Col([
-                        html.Div(children=make_btn_fscreen("volt-fs"),style=dict(height="1vh"), className="transparent"),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        make_btn_fscreen("volt-fs"),
                         dcc.Graph(
                             id="voltage-plot",
                             className="side-plot pretty_container",
@@ -713,7 +698,8 @@ layout = html.Div(
                         ),],
                     width=4),
                 dbc.Col([
-                        html.Div(children=make_btn_fscreen("bosch-fs"),style=dict(height="1vh"), className="transparent"),
+                        html.Div(style=dict(height="1vh"), className="transparent"),
+                        make_btn_fscreen("bosch-fs"),
                         dcc.Graph(
                             id="bosch-plot",
                             className="side-plot pretty_container",
