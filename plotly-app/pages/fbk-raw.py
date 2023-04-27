@@ -66,7 +66,7 @@ def get_data_6months() -> pd.DataFrame:
 
 
 def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
-    if not os.getenv("DEBUG"):
+    if os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()

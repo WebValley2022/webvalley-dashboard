@@ -107,7 +107,7 @@ def get_all_data() -> pd.DataFrame:
 
 
 def get_appa_data(selected_period: str)  -> pd.DataFrame:  
-    if not os.getenv("DEBUG"):
+    if os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()    
@@ -288,7 +288,6 @@ LAST_CLICKED = None
     [Output("main-plot", "figure"),
      Output("year-plot", "figure"),
      Output("week-plot", "figure"),
-     Output("day-plot", "figure"),
     ],
     
     [State("selected-appa-station", "value"),
@@ -465,27 +464,22 @@ def update_main_plot(selected_appa_station: str, start_date, end_date, selected_
     fig_week.update_traces(opacity=0.6, marker_line_width=1.5, marker_line_color='black')
     #-------------------------------------------------------------
     
-    df_day = data.groupby(data.Date.dt.hour).mean(numeric_only=True)
-    df_day.index.names = ["Hour"]
-    df_day = df_day.reset_index()
-    fig_day = line_plot(df_day, "Hour", "Value", title="Hourly avg", pollutant=selected_pollutant)
+   
     
-    return [fig_main, fig_year,fig_week, fig_day]
+    return [fig_main, fig_year,fig_week]
 
 @callback(
     [Output("modal-appa-body", "figure"), Output("modal-appa-centered", "is_open") ],
     
     [Input("year-fs", "n_clicks"),
-     Input("week-fs", "n_clicks"),
-     Input("day-fs", "n_clicks")],
+     Input("week-fs", "n_clicks"),],
     
     [State("modal-appa-centered", "is_open"),
      State("year-plot", "figure"),
-     State("week-plot", "figure"),
-     State("day-plot", "figure"),]
+     State("week-plot", "figure"),]
 )
-def toggle_modal(year_fs,week_fs, day_fs, is_open, year_plot, week_plot, day_plot):
-    if year_fs or week_fs or day_fs:
+def toggle_modal(year_fs,week_fs, is_open, year_plot, week_plot):
+    if year_fs or week_fs :
         if "year-fs" == callback_context.triggered_id:
             year_plot = go.Figure(year_plot)
             year_plot.update_yaxes(fixedrange=False)
@@ -495,11 +489,7 @@ def toggle_modal(year_fs,week_fs, day_fs, is_open, year_plot, week_plot, day_plo
             week_plot = go.Figure(week_plot)
             week_plot.update_yaxes(fixedrange=False)
             return [week_plot, not is_open]
-        
-        elif "day-fs" == callback_context.triggered_id:
-            day_plot = go.Figure(day_plot)
-            day_plot.update_yaxes(fixedrange=False)
-            return [day_plot, not is_open]
+
     return [None, is_open]
 
 
@@ -512,6 +502,50 @@ def create_download_file(n_clicks):
     """global df
     return dcc.send_data_frame(df.to_csv, "appa_data.csv")"""
     cache.clear()
+    
+
+translate = {
+     'NO2' : 'Nitrogen Dioxide',
+     'PM10' : 'PM10',
+     'PM2.5' : 'PM2.5',
+     'O3' : 'Ozone',
+     'CO' : 'Carbon Monoxide',
+    'SO2' : 'Sulfur Dioxide',
+}
+
+@callback(
+    Output("card-limit", "children"),
+    Input("selected-pollutant", "value"),
+    prevent_initial_call=True,
+)
+def create_card_limit(pollutant):
+    return dbc.Card(
+    [
+        dbc.CardImg(
+            src="/assets/img/airquality.jpg",
+            top=True,
+            style={"opacity": 0.3, "height": '24.9vh',"border-radius":'14px'},
+        ),
+        dbc.CardImgOverlay(
+            dbc.CardBody(
+                [
+                    html.H4("EU Air Quality Directives", className="card-title"),
+                    html.P(
+                        f"Limit value for {translate[pollutant]}",
+                        className="card-text",
+                    ),
+                    html.Div(
+                        [
+                            html.H3("120",style={'color':'red'}),
+                            html.P(f"this year has been exceeded {37} times")
+                            ]),
+                ],
+            style={"background-color":"rgb(0,0,0,0)"}),
+        ),
+    ],
+    style={"height":"25vh","border-radius":'15px'},
+)
+    
     
 
 periods = ["all data","last year","last 6 months", "last month", "last week", "last day"]
@@ -537,30 +571,8 @@ download_btn = dbc.Button(
 )
 download_it = dcc.Download(id="download-text")
 
-card = dbc.Card(
-    [
-        dbc.CardImg(
-            src="/static/images/placeholder286x180.png",
-            top=True,
-            style={"opacity": 0.3},
-        ),
-        dbc.CardImgOverlay(
-            dbc.CardBody(
-                [
-                    html.H4("Card title", className="card-title"),
-                    html.P(
-                        "An example of using an image in the background of "
-                        "a card.",
-                        className="card-text",
-                    ),
-                    dbc.Button("Go somewhere", color="primary"),
-                ],
-            ),
-        ),
-    ],
-    style={"height":"25vh",},
-)
 
+card = html.Div(id="card-limit")
 
 
 def make_btn_fscreen(id :str):
@@ -685,17 +697,8 @@ layout = html.Div(
                     width=4),
                 dbc.Col([
                         html.Div(style=dict(height="1vh"), className="transparent"),
-                        make_btn_fscreen("day-fs"),
-                        #card,
-                        dcc.Graph(
-                            id="day-plot",
-                            className="side-plot pretty_container",
-                            config={
-                                "displayModeBar": False,
-                                "displaylogo": False,
-                            },
-                            style=dict(height="25vh"),
-                        ),
+                        card,
+
                         
                     ],
                     width=4),
