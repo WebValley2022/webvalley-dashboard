@@ -289,6 +289,45 @@ GROUP BY date_trunc('day', p.sensor_ts),
     FLOOR(date_part('hour', p.sensor_ts) /{H}) , n.description, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
+
+def q_custom_appa_from_now(times, H):
+    return f"""
+select
+    stazione,
+    inquinante,
+    min(ts) as ts,
+    avg(valore) as valore
+from appa_data
+where ts >= NOW() - interval '{times}'
+GROUP BY date_trunc('day', ts), 
+    FLOOR(date_part('hour', ts) /{H}) , stazione, inquinante
+ORDER BY date_trunc('day', ts);"""
+
+def q_custom_appa(start, end, H):
+    return f"""
+select
+    stazione,
+    inquinante,
+    min(ts),
+    avg(valore)
+from appa_data
+where ts BETWEEN '{start}' AND '{end}'
+GROUP BY date_trunc('day', ts), 
+    FLOOR(date_part('hour', ts) /{H}) , stazione, inquinante
+ORDER BY date_trunc('day', ts);"""
+
+query_appa_one_data_per_week =  """
+select
+    stazione,
+    inquinante,
+    date_trunc('week', ts) as ts,
+    avg(valore) as valore
+from appa_data
+group by date_trunc('week', ts),stazione, inquinante
+order by date_trunc('week', ts);"""
+
+
+
 def general_query(avg: bool, time: str, start :str, end :str, interval :int):
     arr = {0: 'second', 1:'minute', 2:'hour', 3:'day'}
     

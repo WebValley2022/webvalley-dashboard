@@ -66,7 +66,7 @@ def get_data_6months() -> pd.DataFrame:
 
 
 def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
-    if os.getenv("DEBUG"):
+    if not os.getenv("DEBUG"):
         fbk_data = utils.get_fbk_data()
     else:
         start = datetime.now()
@@ -304,8 +304,34 @@ def update_desc(station):
         list_tooltips.append(body)
     return list_tooltips
         
+
+def check_line_history(selected_station, history, res_state, het_state, volt_state, bosch_state): 
+    station = 1 if (selected_station.split(" - ")[-1] == "S. Chiara") else 6
+    sensors = load_data_from_psql(querys.query_history_sensor)
+    sensors = sensors .loc[sensors["node_id"] == station]
+    sensors["attrs"] = sensors["attrs"].astype(str)
+    res_state = go.Figure(res_state)
+    sensors = sensors.groupby('attrs')
+    for tmp, group in sensors:
+        tmp = tmp.replace("'",'"')
+        d = json.loads(tmp)
+        try:
+            pos_x = pd.to_datetime(d["active since"]).tz_localize(None)          
+            first = res_state["data"][0]['x'][0]
+            first  = pd.to_datetime(first).tz_localize(None)
+            
+            last = res_state["data"][0]['x'][-1]
+            last  = pd.to_datetime(last).tz_localize(None)
+            
+            if first < pos_x and pos_x < last:
+                if history:
+                    res_state.add_vline(x=pos_x, line_width=3, line_dash="dash", line_color="green")
+                else:
+                    res_state.layout.shapes = None
+        except Exception as e:
+            pass
         
-    
+    return res_state, het_state, volt_state, bosch_state
     
 
 @callback(
@@ -337,32 +363,7 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         return res_state, het_state, volt_state, bosch_state
     
     elif "check_history" == callback_context.triggered_id:
-        station = 1 if (selected_station.split(" - ")[-1] == "S. Chiara") else 6
-        sensors = load_data_from_psql(querys.query_history_sensor)
-        sensors = sensors .loc[sensors["node_id"] == station]
-        sensors["attrs"] = sensors["attrs"].astype(str)
-        res_state = go.Figure(res_state)
-        sensors = sensors.groupby('attrs')
-        for tmp, group in sensors:
-            tmp = tmp.replace("'",'"')
-            d = json.loads(tmp)
-            try:
-                pos_x = pd.to_datetime(d["active since"]).tz_localize(None)          
-                first = res_state["data"][0]['x'][0]
-                first  = pd.to_datetime(first).tz_localize(None)
-                
-                last = res_state["data"][0]['x'][-1]
-                last  = pd.to_datetime(last).tz_localize(None)
-                
-                if first < pos_x and pos_x < last:
-                    if history:
-                        res_state.add_vline(x=pos_x, line_width=3, line_dash="dash", line_color="green")
-                    else:
-                        res_state.layout.shapes = None
-            except Exception as e:
-                pass
-            
-        return res_state, het_state, volt_state, bosch_state
+        return check_line_history(selected_station, history, res_state, het_state, volt_state, bosch_state)
             
     if "btn_search_date" == callback_context.triggered_id or ("selected-station" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date"):
         fbk_data = utils.query_custom(start_date, end_date)
@@ -371,7 +372,6 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
         fbk_data = cache_fbk_data(selected_period)
         LAST_CLICKED = "selected-period"
         
-    
     dfFBK1 = fbk_data[
         fbk_data["node_description"] == selected_station.split(" - ")[-1]
     ].dropna(inplace=False)
@@ -398,7 +398,8 @@ def update_plots(selected_period, selected_station, yaxis_type, btn_date, histor
                     name=SensingMaterial,
                     line=dict(
                         width=1.5
-                    )
+                    ),
+                    #line_shape='spline',
                 )
             )
 
@@ -627,6 +628,8 @@ def toggle_modal(heater_fs,volt_fs, bosch_fs, is_open, heater_plot, volt_plot, b
             bosch_plot.update_yaxes(fixedrange=False)
             return [bosch_plot, not is_open]
     return [None, is_open]
+
+
 
 modal = dbc.Modal(
             [
