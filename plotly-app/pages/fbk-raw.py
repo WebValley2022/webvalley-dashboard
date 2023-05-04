@@ -66,23 +66,20 @@ def get_data_6months() -> pd.DataFrame:
 
 
 def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
-    if os.getenv("DEBUG"):
-        fbk_data = utils.get_fbk_data()
-    else:
-        start = datetime.now()
-        if selected_period  in "last hour":
-            fbk_data = get_data_hours()
-        elif selected_period  in "last day":
-            fbk_data = get_data_day()
-        elif selected_period  in "last week":
-            fbk_data = get_data_week()
-        elif selected_period  in "last month":
-            fbk_data = get_data_month()
-        elif selected_period  in "last 6 months":
-            fbk_data = get_data_6months()    
-        logging.info("Query time", datetime.now() - start)
-        print("QUERY TIME: ", datetime.now() - start)
-        return fbk_data
+    start = datetime.now()
+    if selected_period  in "last hour":
+        fbk_data = get_data_hours()
+    elif selected_period  in "last day":
+        fbk_data = get_data_day()
+    elif selected_period  in "last week":
+        fbk_data = get_data_week()
+    elif selected_period  in "last month":
+        fbk_data = get_data_month()
+    elif selected_period  in "last 6 months":
+        fbk_data = get_data_6months()    
+    logging.info("Query time", datetime.now() - start)
+    print("QUERY TIME: ", datetime.now() - start)
+    return fbk_data
 
 
 def make_card_sensor(sensor : str):

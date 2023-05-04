@@ -99,7 +99,7 @@ def get_all_data() -> pd.DataFrame:
     df = df[df.Value != "n.d."]
     df["Date"] = pd.to_datetime(df["Date"],utc=True)
     year = date.today().year
-    year = f'{year-10}-01-01'
+    year = f'{year-9}-01-01'
     df = df[df["Date"] >= year]
     df['Value'] = df['Value'].astype(float)
     print(f"QUERY TIME final df: {datetime.now() - start}")
@@ -107,40 +107,37 @@ def get_all_data() -> pd.DataFrame:
 
 
 def get_appa_data(selected_period: str)  -> pd.DataFrame:  
-    if os.getenv("DEBUG"):
-        fbk_data = utils.get_fbk_data()
-    else:
-        start = datetime.now()    
-        if selected_period  in "last day":
-            query = "select stazione, inquinante, ts, valore from appa_data where ts >= NOW() - interval '24 hours';"
-        elif selected_period  in "last week":
-            query = "select stazione, inquinante, ts, valore from appa_data where ts >= NOW() - interval '7 days';"
-        elif selected_period  in "last month":
-            query = "select stazione, inquinante, ts, valore from appa_data where ts >= NOW() - interval '30 days';"
-        elif selected_period  in "last 6 months":
-            query = querys.q_custom_appa_from_now('180 days', 6)
-        elif selected_period  in "last year":
-            query = querys.q_custom_appa_from_now('1 years', 12)
-        elif selected_period  in "all data":
-            query =  querys.query_appa_one_data_per_week
-        
-        df = load_data_from_psql(query)    
-        logging.info("Query time", datetime.now() - start)
-        
-        df = df.rename(
-        {
-            "stazione": "Station",
-            "inquinante": "Pollutant",
-            "ts": "Date",
-            "valore": "Value",
-        },
-        axis=1,
-        )
-        # keep only rows with a value that's not NA
-        df = df[df.Value != "n.d."]
-        df["Date"] = pd.to_datetime(df["Date"],utc=True)
-        print(f"QUERY TIME {selected_period}: {datetime.now() - start}")
-        return df
+    start = datetime.now()    
+    if selected_period  in "last day":
+        query = "select stazione, inquinante, ts, valore from appa_data where ts >= NOW() - interval '24 hours';"
+    elif selected_period  in "last week":
+        query = "select stazione, inquinante, ts, valore from appa_data where ts >= NOW() - interval '7 days';"
+    elif selected_period  in "last month":
+        query = "select stazione, inquinante, ts, valore from appa_data where ts >= NOW() - interval '30 days';"
+    elif selected_period  in "last 6 months":
+        query = querys.q_custom_appa_from_now('180 days', 6)
+    elif selected_period  in "last year":
+        query = querys.q_custom_appa_from_now('1 years', 12)
+    elif selected_period  in "all data":
+        query =  querys.query_appa_one_data_per_week
+    
+    df = load_data_from_psql(query)    
+    logging.info("Query time", datetime.now() - start)
+    
+    df = df.rename(
+    {
+        "stazione": "Station",
+        "inquinante": "Pollutant",
+        "ts": "Date",
+        "valore": "Value",
+    },
+    axis=1,
+    )
+    # keep only rows with a value that's not NA
+    df = df[df.Value != "n.d."]
+    df["Date"] = pd.to_datetime(df["Date"],utc=True)
+    print(f"QUERY TIME {selected_period}: {datetime.now() - start}")
+    return df
 
 
 
@@ -158,6 +155,74 @@ def filter_df(df: pd.DataFrame, station: str, pollutant: str) -> pd.DataFrame:
     """
     return df[(df.Station == station) & (df.Pollutant == pollutant)]
 
+def plot_compare_years(start_date, end_date, selected_appa_station, pollutant):
+    
+    
+    s = start_date.split('-')
+    e = end_date.split('-')
+    q = querys.query_appa_compare_years(s_day=s[2],s_month=s[1],e_day=e[2],e_month=e[1])
+    df = load_data_from_psql(q)
+    df = df.rename(
+    {
+        "stazione": "Station",
+        "inquinante": "Pollutant",
+        "ts": "Date",
+        "valore": "Value",
+    },
+    axis=1,
+    )
+    # keep only rows with a value that's not NA
+    df = df[df.Value != "n.d."]
+    df["Date"] = pd.to_datetime(df["Date"],utc=False)
+    df['Year'] = df.Date.dt.year
+    df["Date"] = df['Date'].dt.strftime("2000-%m-%d %H")
+    df["Date"] = pd.to_datetime(df["Date"],utc=False)
+    
+    df = filter_df(df, selected_appa_station, pollutant)
+    df.sort_values(by='Date', inplace = True)
+    
+    
+    fig = px.line(df,x='Date',y='Value',color='Year',category_orders={'Year': df['Year'].sort_values().unique()})
+    fig.update_layout(
+        margin=dict(l=0, r=5, t=30, b=0),
+        plot_bgcolor="#fefefe",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font= dict(family="Roboto, sans-serif", size=12, color="black"),
+        title=dict(
+            text="Pollutant concentration",
+            x=0.5,
+            xanchor="center",
+            yanchor="top",
+            font_size=18,
+        ),
+        modebar=dict(
+            bgcolor="#ffffff"
+        )
+    )
+    fig.update_yaxes(
+        title="μg/m3",
+        fixedrange=False,
+        title_font_size=12,
+        showgrid=True,
+        gridcolor='rgb(237, 232, 232)',
+        gridwidth=0.5,
+    )
+    fig.update_xaxes(
+         title_font_size=12,
+         showgrid=True,
+         gridcolor='rgb(237, 232, 232)',
+         gridwidth=0.5,
+    )
+    fig.add_hrect(y0=0, y1=threshold[pollutant]['decent'], line_width=0, fillcolor='lightblue', opacity=0.1)
+    fig.add_hrect(y0=threshold[pollutant]['decent'], y1=threshold[pollutant]['moderate'], line_width=0, fillcolor='green', opacity=0.1) if df['Value'].max() > threshold[pollutant]['decent'] else None
+    fig.add_hrect(y0=threshold[pollutant]['moderate'], y1=threshold[pollutant]['poor'], line_width=0, fillcolor='yellow', opacity=0.1) if df['Value'].max() > threshold[pollutant]['moderate'] else None
+    fig.add_hrect(y0=threshold[pollutant]['poor'], y1=threshold[pollutant]['very poor'], line_width=0, fillcolor='red', opacity=0.1)    if df['Value'].max() > threshold[pollutant]['poor'] else None
+    fig.add_hrect(y0=threshold[pollutant]['very poor'], y1=1000, line_width=0, fillcolor='#660033', opacity=0.1) if df['Value'].max() > threshold[pollutant]['very poor'] else None
+    fig.update_traces(line_width=1.5)
+    fig.update_layout(yaxis_range=[0, df['Value'].max()+10])
+    return fig
+    
+
 
 def line_plot(
     df: pd.DataFrame,
@@ -168,7 +233,6 @@ def line_plot(
     title_size: int = 14,
     color: str = None,
     sort=False,
-    
 ) -> go.Figure:
     """
     Generates a line plot based on the dataframe, x and y given
@@ -182,7 +246,7 @@ def line_plot(
     Returns:
         go.Figure: the line plot
     """
-
+        
     colors=[]
     for i in df[y]:
         if any([i > threshold[pollutant]['very poor'] ]):
@@ -241,10 +305,10 @@ def line_plot(
          gridwidth=0.5,
     )
     fig.add_hrect(y0=0, y1=threshold[pollutant]['decent'], line_width=0, fillcolor='lightblue', opacity=0.1)
-    fig.add_hrect(y0=threshold[pollutant]['decent'], y1=threshold[pollutant]['moderate'], line_width=0, fillcolor='green', opacity=0.1)
-    fig.add_hrect(y0=threshold[pollutant]['moderate'], y1=threshold[pollutant]['poor'], line_width=0, fillcolor='yellow', opacity=0.1)
-    fig.add_hrect(y0=threshold[pollutant]['poor'], y1=threshold[pollutant]['very poor'], line_width=0, fillcolor='red', opacity=0.1)
-    fig.add_hrect(y0=threshold[pollutant]['very poor'], y1=1000, line_width=0, fillcolor='#660033', opacity=0.1)
+    fig.add_hrect(y0=threshold[pollutant]['decent'], y1=threshold[pollutant]['moderate'], line_width=0, fillcolor='green', opacity=0.1)   if df['Value'].max() > threshold[pollutant]['decent'] else None
+    fig.add_hrect(y0=threshold[pollutant]['moderate'], y1=threshold[pollutant]['poor'], line_width=0, fillcolor='yellow', opacity=0.1) if df['Value'].max() > threshold[pollutant]['moderate'] else None
+    fig.add_hrect(y0=threshold[pollutant]['poor'], y1=threshold[pollutant]['very poor'], line_width=0, fillcolor='red', opacity=0.1)  if df['Value'].max() > threshold[pollutant]['poor'] else None 
+    fig.add_hrect(y0=threshold[pollutant]['very poor'], y1=1000, line_width=0, fillcolor='#660033', opacity=0.1) if df['Value'].max() > threshold[pollutant]['very poor'] else None 
     fig.update_traces( line_width=0.5)
     fig.update_layout(yaxis_range=[0, df[y].max()+10])
     
@@ -300,9 +364,10 @@ LAST_CLICKED = None
     Input("selected-appa-period", "value"),
     Input("selected-weekday-period", "value"),
     Input("btn_search_date", "n_clicks"),
+    Input("check_years", "value"),
     prevent_initial_call=True,
 )
-def update_main_plot(selected_appa_station: str, start_date, end_date, selected_pollutant: str, selected_appa_period: str, selected_weekday_period, btn_search):
+def update_main_plot(selected_appa_station: str, start_date, end_date, selected_pollutant: str, selected_appa_period: str, selected_weekday_period, btn_search, check_years):
     """
     Updates the main plot representing the pollutant level of the selected station over time
 
@@ -316,7 +381,10 @@ def update_main_plot(selected_appa_station: str, start_date, end_date, selected_
     global LAST_CLICKED
 
     
-    if ("btn_search_date" == callback_context.triggered_id or ("selected-pollutant" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date") or ("selected-weekday-period" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date")) and start_date and end_date:
+    if ("btn_search_date" == callback_context.triggered_id or ("selected-pollutant" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date")
+        or ("selected-weekday-period" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date")
+        ) and start_date and end_date:
+        
         LAST_CLICKED = 'btn_search_date'
         q = querys.q_custom_appa(start_date, end_date,1)
         df = load_data_from_psql(q)    
@@ -332,19 +400,19 @@ def update_main_plot(selected_appa_station: str, start_date, end_date, selected_
         )
         # keep only rows with a value that's not NA
         df = df[df.Value != "n.d."]
-        df["Date"] = pd.to_datetime(df["Date"],utc=True)     
+        df["Date"] = pd.to_datetime(df["Date"],utc=True)
     else: 
         LAST_CLICKED = 'else'
         df = get_appa_data(selected_appa_period)
-    
+
     data = filter_df(df, selected_appa_station, selected_pollutant)
     data.sort_values(by='Date', inplace = True)
     
-    
-
-    fig_main = line_plot(
-        data, "Date", "Value", title="Weekly mean over time", title_size=18, pollutant=selected_pollutant
-    )
+    if check_years:
+        fig_main = plot_compare_years(start_date,end_date, selected_appa_station, selected_pollutant)
+    else:
+        fig_main = line_plot(
+            data, "Date", "Value", title="Weekly mean over time", title_size=18, pollutant=selected_pollutant)
     #----------------------------------------------------------------------------------
 
     
@@ -608,6 +676,7 @@ toast = dbc.Toast(
                         dropdown_period,
                         date_range,
                         search,
+                        dcc.Checklist(options=[' Show comparison over years'], id="check_years", style={"font-size": "14px"}),
                         html.Hr(),
                         html.H5("Weekday year:",style={"font-weight":"bold"}),
                         dropdown_weekday,

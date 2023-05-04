@@ -290,6 +290,19 @@ GROUP BY date_trunc('day', p.sensor_ts),
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 
+def query_appa_compare_years(s_day, s_month, e_day, e_month):
+    return f"""
+       SELECT 
+            stazione,
+            inquinante,
+            ts,
+            valore
+        FROM appa_data
+        WHERE date_part('month', ts) * 100 + date_part('day', ts) >= '{s_month}{s_day}'::integer -- filter by starting day of period
+        AND date_part('month', ts) * 100 + date_part('day', ts) <= '{e_month}{e_day}'::integer  -- filter by ending day of period
+
+    """
+
 def q_custom_appa_from_now(times, H):
     return f"""
 select
