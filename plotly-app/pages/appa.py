@@ -15,6 +15,9 @@ import os
 
 from flask_caching import Cache
 
+
+
+
 threshold = {
     'NO2' : {
                 'very poor':400,
@@ -81,6 +84,16 @@ dash.register_page(__name__)
 stations = list(load_data_from_psql("select distinct stazione from appa_data;").stazione)
 
 
+limit_pollutants = {
+    'NO2' : 200,
+    'PM10' : 50,
+    'PM2.5': 25,
+    'O3' : 120,
+    'CO' : 10,
+    'SO2' : None
+}
+
+
 @cache.memoize(timeout= 604800*2) #cached 7 day  
 def get_all_data() -> pd.DataFrame:  
     start = datetime.now()  
@@ -102,6 +115,8 @@ def get_all_data() -> pd.DataFrame:
     year = f'{year-9}-01-01'
     df = df[df["Date"] >= year]
     df['Value'] = df['Value'].astype(float)
+    
+    
     print(f"QUERY TIME final df: {datetime.now() - start}")
     return df
 
@@ -584,9 +599,28 @@ translate = {
 @callback(
     Output("card-limit", "children"),
     Input("selected-pollutant", "value"),
+    Input("selected-appa-station","value"),
+    Input("selected-weekday-period","value"),
     prevent_initial_call=True,
 )
-def create_card_limit(pollutant):
+def create_card_limit(pollutant, station, year):
+    df = get_all_data()
+    try:
+        y = int(year)
+        df = df[(df.Station == station) & (df.Pollutant == pollutant) & (df.Date.dt.year == y )]
+        df = df.groupby([df['Date'].dt.dayofyear]).Value.mean()
+        print(df)
+        
+    except:       
+        y = date.today().year
+        df = df[(df.Station == station) & (df.Pollutant == pollutant) & (df.Date.dt.year == y )]
+        df= df.groupby([df['Date'].dt.dayofyear]).Value.mean()
+        
+        
+    count = df[df > limit_pollutants[pollutant]].count()
+    #print(count)
+    
+    P = html.H4(f" {count} ",style={'color':'red','display': 'inline'})
     return dbc.Card(
     [
         dbc.CardImg(
@@ -599,16 +633,16 @@ def create_card_limit(pollutant):
                 [
                     html.H4("EU Air Quality Directives", className="card-title"),
                     html.P(
-                        f"Limit value for {translate[pollutant]}",
+                        f"Limit value for {translate[pollutant]}: ",
                         className="card-text",
                     ),
                     html.Div(
                         [
-                            html.H3("120",style={'color':'red'}),
-                            html.P(f"this year has been exceeded {37} times")
+                            html.H3(f"{limit_pollutants[pollutant]}",style={'color':'red'}),
+                            html.Div([ html.P(f"In {y}, the average daily limit was exceeded ",style={'display': 'inline'}), P, " times" ]),                         
                             ]),
                 ],
-            style={"background-color":"rgb(0,0,0,0)"}),
+            style={"background-color":"rgb(0,0,0,0)", "font-size":"1.4rem"}),
         ),
     ],
     style={"height":"25vh","border-radius":'15px'},
