@@ -185,7 +185,7 @@ FROM packet_data pd
     left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '180 days'
 GROUP BY date_trunc('day', p.sensor_ts), 
-    FLOOR(date_part('hour', p.sensor_ts) /3) , n.description, s.name
+    FLOOR(date_part('hour', p.sensor_ts) /6) , n.description, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 query_sensor = """
