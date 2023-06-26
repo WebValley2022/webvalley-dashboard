@@ -153,7 +153,7 @@ SELECT
     n.description as node_description,
     s.name as sensor_description,
     TIMESTAMP WITH TIME ZONE 'epoch' +
-    INTERVAL '1 second' * round(extract('epoch' from p.sensor_ts) / 10800) * 10800 as ts,
+    INTERVAL '1 second' * round(extract('epoch' from p.sensor_ts) / 32400) * 32400 as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
@@ -165,8 +165,8 @@ FROM packet_data pd
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '180 days'
-GROUP BY round(extract('epoch' from p.sensor_ts) / 10800), n.description, s.name
-ORDER BY round(extract('epoch' from p.sensor_ts) / 10800);
+GROUP BY round(extract('epoch' from p.sensor_ts) / 32400), n.description, s.name
+ORDER BY round(extract('epoch' from p.sensor_ts) / 32400);
 """
 
 query_6moths_avg = """
@@ -185,7 +185,7 @@ FROM packet_data pd
     left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '180 days'
 GROUP BY date_trunc('day', p.sensor_ts), 
-    FLOOR(date_part('hour', p.sensor_ts) /6) , n.description, s.name
+    FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 query_sensor = """
