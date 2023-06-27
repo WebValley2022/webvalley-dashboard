@@ -183,7 +183,45 @@ FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
     left join node n on n.id = p.node_id
-where p.sensor_ts >= NOW() - interval '180 days'
+where p.sensor_ts >= NOW() - interval '180 days' and n.id = 6
+GROUP BY date_trunc('day', p.sensor_ts), 
+    FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
+ORDER BY date_trunc('day', p.sensor_ts);"""
+
+query_6moths_avg_node_1 = """
+SELECT  n.description as node_description,
+    s.name as sensor_description,
+    min(p.sensor_ts) as ts,
+    avg(pd.r1) as heater_res,
+    avg(pd.r2) as signal_res,
+    avg(pd.volt) as volt,
+    avg((p.attrs::json->>'P')::numeric) as p,
+    avg((p.attrs::json->>'T')::numeric) as t,
+    avg((p.attrs::json->>'RH')::numeric) as rh
+FROM packet_data pd
+    left join packet p on p.id = pd.packet_id
+    left join sensor s on s.id = pd.sensor_id
+    left join node n on n.id = p.node_id
+where p.sensor_ts >= NOW() - interval '180 days' and n.id = 1
+GROUP BY date_trunc('day', p.sensor_ts), 
+    FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
+ORDER BY date_trunc('day', p.sensor_ts);"""
+
+query_6moths_avg_node_6 = """
+SELECT  n.description as node_description,
+    s.name as sensor_description,
+    min(p.sensor_ts) as ts,
+    avg(pd.r1) as heater_res,
+    avg(pd.r2) as signal_res,
+    avg(pd.volt) as volt,
+    avg((p.attrs::json->>'P')::numeric) as p,
+    avg((p.attrs::json->>'T')::numeric) as t,
+    avg((p.attrs::json->>'RH')::numeric) as rh
+FROM packet_data pd
+    left join packet p on p.id = pd.packet_id
+    left join sensor s on s.id = pd.sensor_id
+    left join node n on n.id = p.node_id
+where p.sensor_ts >= NOW() - interval '180 days' and n.id = 6
 GROUP BY date_trunc('day', p.sensor_ts), 
     FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""

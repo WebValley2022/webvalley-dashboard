@@ -61,8 +61,10 @@ def get_data_month() -> pd.DataFrame:
 @cache.memoize(timeout=604800) #cached 7 day  
 def get_data_6months() -> pd.DataFrame:
     print("NOT CACHED 6_MONTHS")
-    fbk_data = load_data_from_psql(querys.query_6moths_avg)
-    return utils.filter_fbk_data(fbk_data)
+    fbk_data = load_data_from_psql(querys.query_6moths_avg_node_1)
+    fbk_data_1 = load_data_from_psql(querys.query_6moths_avg_node_6)
+    fbk = pd.concat([fbk_data,fbk_data_1])
+    return utils.filter_fbk_data(fbk)
 
 
 def cache_fbk_data(selected_period: str)  -> pd.DataFrame:
