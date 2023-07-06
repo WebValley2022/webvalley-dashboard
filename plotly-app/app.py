@@ -123,4 +123,4 @@ if __name__ == "__main__":
         app.run(debug=True)
     else:
         # Production
-        app.run_server(port=8051, host="0.0.0.0", debug=True)
+        app.run_server(port=8051, host="0.0.0.0", debug=False)

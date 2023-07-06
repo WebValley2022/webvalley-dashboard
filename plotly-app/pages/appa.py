@@ -663,7 +663,7 @@ dropdown_weekday = dcc.Dropdown(
 
 title = html.Div("APPA Data", className="header-title", style={'text-align':'center'})
 dropdown = dcc.Dropdown(
-    stations, id="selected-appa-station", className="dropdown", value=stations[1]
+    stations, id="selected-appa-station", className="dropdown", value=stations[3]
 )
 download_btn = dbc.Button(
     [html.I(className="fa-solid fa-download"), " Download full data"],
