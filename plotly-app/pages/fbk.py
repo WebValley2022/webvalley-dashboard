@@ -12,8 +12,8 @@ import joblib
 from tensorflow.keras.models import load_model
 from datetime import timedelta, datetime
 
-
 dash.register_page(__name__)
+
 
 
 def get_data_day(start, end) -> pd.DataFrame:
