@@ -354,7 +354,7 @@ GROUP BY date_trunc('day', ts),
     FLOOR(date_part('hour', ts) /{H}) , stazione, inquinante
 ORDER BY date_trunc('day', ts);"""
 
-def q_custom_appa(start, end, H):
+def q_custom_appa(start, end, H=1):
     return f"""
 select
     stazione,
