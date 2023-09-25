@@ -55,62 +55,72 @@ app = Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME],
 )
 
-sidebar = html.Div(
-    [
-        html.Div(
-            [
-                # width: 3rem ensures the logo is the exact width of the
-                # collapsed sidebar (accounting for padding)
-                html.Img(src="/assets/img/logo_cut.png", style={"width": "5rem"}),
-                html.H2("Airwatching"),
-            ],
-            className="sidebar-header",
-        ),
-        html.Hr(className="sidebar-hr"),
-        dbc.Nav(
-            [
-                dbc.NavLink(
-                    [
-                        html.I(className="fa-solid fa-square-poll-vertical fa-2x"),
+sidebar = html.Div( 
+    [ 
+        html.Div( 
+            [ 
+                # width: 3rem ensures the logo is the exact width of the 
+                # collapsed sidebar (accounting for padding) 
+                html.Img(src="/assets/img/logo_cut.png", style={"width": "5rem"}), 
+                html.H2("Airwatching"), 
+            ], 
+            className="sidebar-header", 
+        ), 
+        html.Hr(className="sidebar-hr"), 
+        dbc.Nav( 
+            [ 
+                dbc.NavLink( 
+                    [ 
+                        html.I(className="fa-solid fa-user fa-2x"), 
                         html.Br(), 
-                        html.Span("Raw FBK Data")
-                    ],
-                    href="/",
-                    active="exact",
-                    style={"text-align": "center"}
-                    
-                ),
-                dbc.NavLink(
-                    [
-                        html.I(className="fa-solid fa-chart-line fa-2x"),
+                        html.Span("Disclaimer"), 
+                    ], 
+                    href="/disclaimer", 
+                    active="exact", 
+                    style={"text-align": "center"}, 
+                ), 
+                html.Hr(className="sidebar-hr"), 
+                dbc.NavLink( 
+                    [ 
+                        html.I(className="fa-solid fa-square-poll-vertical fa-2x"), 
                         html.Br(), 
-                        html.Span("Fitted FBK Data"),
-                    ],
-                    href="/fbk",
-                    active="exact",
-                    style={"text-align": "center"}
-                ),
-                dbc.NavLink(
-                    [
-                        html.I(className="fa-solid fa-smog fa-2x"),
+                        html.Span("Raw FBK Data"), 
+                    ], 
+                    href="/", 
+                    active="exact", 
+                    style={"text-align": "center"}, 
+                ), 
+                dbc.NavLink( 
+                    [ 
+                        html.I(className="fa-solid fa-chart-line fa-2x"), 
                         html.Br(), 
-                        html.Span("APPA Data"),
-                    ],
-                    href="/appa",
-                    active="exact",
-                    style={"text-align": "center"}
-                ),
-            ],
-            vertical=True,
-            pills=True,
-        ),
-        html.Hr(className="sidebar-hr"),
-        html.Div(
-            html.Img(src="/assets/img/fbk-logo.png", className="fbk-logo"),
-            className="fbk-logo-div",
-        ),
-    ],
-    className="sidebar",
+                        html.Span("Fitted FBK Data"), 
+                    ], 
+                    href="/fbk", 
+                    active="exact", 
+                    style={"text-align": "center"}, 
+                ), 
+                dbc.NavLink( 
+                    [ 
+                        html.I(className="fa-solid fa-smog fa-2x"), 
+                        html.Br(), 
+                        html.Span("APPA Data"), 
+                    ], 
+                    href="/appa", 
+                    active="exact", 
+                    style={"text-align": "center"}, 
+                ), 
+            ], 
+            vertical=True, 
+            pills=True, 
+        ), 
+        html.Hr(className="sidebar-hr"), 
+        html.Div( 
+            html.Img(src="/assets/img/fbk-logo.png", className="fbk-logo"), 
+            className="fbk-logo-div", 
+        ), 
+    ], 
+    className="sidebar", 
 )
 
 
