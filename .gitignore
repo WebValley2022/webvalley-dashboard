@@ -141,3 +141,11 @@ images/
 plotly/pokemon.py
 prova-valeria.ipynb
 merged_APPA_data.*
+
+#unicorn extensions
+*.swm
+*.swn
+*.swo
+*.swp
+
+.vscode
