@@ -1,5 +1,4 @@
-from statistics import mean
-from dash import html, dcc, Input, Output, callback
+from dash import html, dcc, Input, Output, callback, callback_context, State
 from .utils import utils, querys
 from db_utils import load_data_from_psql
 import dash_bootstrap_components as dbc
@@ -9,9 +8,7 @@ import pandas as pd
 import numpy as np
 import dash
 import joblib
-from tensorflow.keras.models import load_model
-
-
+import tensorflow as tf
 from datetime import timedelta, datetime
 import pytz
 from .utils.kerasWrapper import KerasWrapper
@@ -87,7 +84,7 @@ pipeline2 = joblib.load('data/pipeline.pkl')
 
 # Load the Keras model separately
 
-model = load_model('data/model.h5')
+model = tf.keras.models.load_model('data/model.h5')
 #predictions = inference_func(input_data)['output'].numpy()
 
 # Assign the loaded model to the pipeline
@@ -274,21 +271,26 @@ def period_to_interval(period):
     
     return day.date(), now.date()
 
-
+LAST_CLICKED = None
 
 @callback(
     Output("comparison-graph", "figure"),
+    State("my-date-picker-range", "start_date"),
+    State("my-date-picker-range", "end_date"),
     Input("selected-station", "value"),
-    
     Input("selected-fbk-pollutant", "value"),
     Input("toggle-comparison", "value"),
     Input("selected-period", "value"),
+    Input("btn_search_date", "n_clicks"),
 )
 def update_comparison_graph(
+    start_date : str,
+    end_date : str,
     selected_station: str,
     selected_pollutant: str,
     toggle_comparison: str,
     selected_period: str,
+    btn_search : int
 ) -> go.Figure:
     """
     Updates the graph representing the comparison between
@@ -303,43 +305,27 @@ def update_comparison_graph(
     Returns:
         plotly.graph_objs.Figure: the graph
     """
+    
+    global LAST_CLICKED
 
+    if (
+        (
+            "btn_search_date" == callback_context.triggered_id
+            or 
+            ("selected-fbk-pollutant" == callback_context.triggered_id and LAST_CLICKED == "btn_search_date")
+        )
+        and start_date
+        and end_date
+    ):
+        LAST_CLICKED = "btn_search_date"
+        start = start_date
+        end= end_date
+    else:
+        LAST_CLICKED = "else"
+        start, end = period_to_interval(selected_period)
     
-    months= {
-    'January': ('2023-01-01', '2023-01-31'),
-    'February': ('2023-02-01', '2023-02-28'),
-    'March': ('2023-03-01', '2023-03-31'),
-    'April': ('2023-04-01', '2023-04-30'),
-    'May': ('2023-05-01', '2023-05-31'),
-    'June': ('2023-06-01', '2023-06-30'),
-    'July': ('2023-07-01', '2023-07-31'),
-    'August': ('2023-08-01', '2023-08-31'),
-    'September': ('2023-09-01', '2023-09-30'),
-    'October': ('2023-10-01', '2023-10-31'),
-    'November': ('2023-11-01', '2023-11-30'),
-    'December': ('2023-12-01', '2023-12-31')
-    }
-    
-    
-    #start = months[selected_period][0]
-    #end = months[selected_period][1]
-    
-    start, end = period_to_interval(selected_period)
-    
-    raw_data = get_data_day(start, end)
-    
-    italian_timezone = pytz.timezone('Europe/Rome')
-
-    # Get the current time in Italy
-    current_time_italy = datetime.now(italian_timezone)
-    current_time_italy = current_time_italy.replace(tzinfo=None)
-
-    # Get the current time in UTC
-    current_time_utc = datetime.now(pytz.UTC)
-    current_time_utc = current_time_utc.replace(tzinfo=None)
-    # Calculate the time difference
-    time_difference = current_time_italy - current_time_utc
-    raw_data['ts'] = raw_data['ts'] + time_difference
+    raw_data = get_data_day(start, end)    
+    raw_data['ts'] = raw_data['ts'].apply(lambda x: x + timedelta(hours=2) if (x.month >= 4 and x.month <= 10) else x + timedelta(hours=1))
     test = raw_data.drop('ts',axis=1)
     
     y_pred=pipeline2.predict(test.values)
@@ -406,62 +392,6 @@ def update_comparison_graph(
     fig.update_yaxes(title_text="Value", fixedrange=True)
 
     return fig
-
-
-def get_mean(
-    dataframe: pd.DataFrame, station: str, selected_pollutant: str, selected_period
-) -> pd.DataFrame:
-    """
-    Gets the mean of a given time span from the given station
-    and pollutant in the given dataframe
-
-    Args:
-        dataframe (pd.DataFrame): the input dataframe to be processed
-        station (str): the station where to get the data
-        selected_pollutant (str): the desired pollutant
-        selected_period (str): values can be "D": day, "W": week, "Y": year, "H": hour
-
-    Returns:
-        pd.DataFrame: the dataframe with the mean values
-    """
-    pollutants = {"Biossido di Azoto": "NO2", "Ozono": "O3", "Ossido di Carbonio": "CO"}
-
-    pollutant_real = selected_pollutant + "_real"
-    pollutant_pred = selected_pollutant + "_pred"
-
-    # filter station
-    mean_temp = dataframe[dataframe.Station == station]
-    # get sub-dataframe
-    mean_temp = mean_temp[["Time", pollutant_real, pollutant_pred]]
-    mean_temp.Time += pd.Timedelta(11, "D")
-
-    # get the last date available
-    last_day = mean_temp.Time.max()
-
-    if selected_period == "last 24h":
-        time_span = "H"
-        mean_temp = mean_temp.tail(24)
-    elif selected_period == "last week":
-        time_span = "H"
-        mean_temp = mean_temp.tail(168)
-    elif selected_period == "last month":
-        time_span = "D"
-        mean_temp = mean_temp[
-            (mean_temp.Time.dt.month == last_day.month)
-            & (mean_temp.Time.dt.year == last_day.year)
-        ]
-    elif selected_period == "last year":
-        time_span = "W"
-        mean_temp = mean_temp[(mean_temp.Time.dt.year == last_day.year)]
-    else:
-        time_span = "W"
-
-    mean_temp = mean_temp.groupby(by=pd.Grouper(key="Time", freq=time_span)).mean()
-    # mean_temp.insert(1, "Inquinante", pollutant)
-    # mean_temp.insert(1, "Stazione", station)
-    mean_temp.reset_index(inplace=True)
-
-    return mean_temp
 
 
 layout = html.Div(
