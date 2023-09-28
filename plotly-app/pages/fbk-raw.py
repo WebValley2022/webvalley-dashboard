@@ -298,7 +298,6 @@ header = html.Div(
     Input("btn_fbk_raw", "n_clicks"),
     prevent_initial_call=True,
 )
-@cache.memoize(timeout=864000)  # cached 1 day
 def create_download_file(n_clicks):
     """global fbk_data
     return dcc.send_data_frame(get_fbk_data().to_csv, "fbk_raw_data.csv")"""
@@ -308,6 +307,7 @@ def create_download_file(n_clicks):
 @callback(
     Output("interval-component", "max_intervals"),
     [Input("interval-component", "n_intervals")],
+    preprevent_initial_call=True,
     background=True,
     manager=background_callback_manager,
 )
@@ -315,7 +315,6 @@ def background_cache(_):
     print("BACKGROUND CACHING")
     get_data_6months()
     print("END BACKGROUD CACHING")
-
 
 @callback(
     [
