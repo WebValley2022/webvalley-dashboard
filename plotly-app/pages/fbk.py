@@ -28,7 +28,7 @@ def testnewdf(start, end, node=1):
     
     return f"""WITH sensor_data AS (
     SELECT
-        p_node_id,
+        p.node_id,
         s.name AS sensor_description,
         p.sensor_ts AS ts,
         pd.r1 AS heater_res,
