@@ -22,6 +22,7 @@ import os
 import dash_daq as daq
 
 from flask_caching import Cache
+import diskcache
 
 
 ###################
@@ -34,7 +35,7 @@ cache = Cache(
     config={"CACHE_TYPE": "filesystem", "CACHE_DIR": "cache-directory"},
 )
 
-import diskcache
+
 
 cache_disk = diskcache.Cache("./cache_disk")
 background_callback_manager = DiskcacheManager(cache_disk)
@@ -82,7 +83,7 @@ def get_data_6months() -> pd.DataFrame:
     fbk_data = load_data_from_psql(querys.query_6moths_avg_node_1)
     fbk_data_1 = load_data_from_psql(querys.query_6moths_avg_node_6)
     fbk = pd.concat([fbk_data, fbk_data_1])
-    return utils.filter_fbk_data(fbk)\
+    return utils.filter_fbk_data(fbk)
 
 
 def cache_fbk_data(selected_period: str) -> pd.DataFrame:
@@ -98,7 +99,7 @@ def cache_fbk_data(selected_period: str) -> pd.DataFrame:
     elif selected_period in "last 6 months":
         fbk_data = get_data_6months()
     logging.info("Query time", datetime.now() - start)
-    print("QUERY TIME: ", datetime.now() - start)
+    print(f"QUERY TIME {selected_period}: ", datetime.now() - start)
     return fbk_data
 
 
@@ -141,7 +142,7 @@ def saturated(station):
     for s in d.keys():
         tmp = df.loc[
             (df["sensor_description"] == s)
-            & (df["node_description"] == station.split(" - ")[-1])
+            & (df["node_id"] == dict_stations[station])
         ].reset_index()
         if (tmp["signal_res"] == tmp["signal_res"][0]).all():
             d[s] = True
@@ -160,10 +161,16 @@ title = html.Div(
 )
 
 periods = ["last 6 months", "last month", "last week", "last day", "last hour"]
-stations = ["Trento - via Bolzano", "Trento - S. Chiara"]
-points = {
-    (11.11022, 46.10433): "Trento - via Bolzano",
-    (11.1262, 46.06292): "Trento - S. Chiara",
+stations = [ "Trento - S. Chiara", "Trento - via Bolzano"]
+
+dict_stations = {
+    "Trento - S. Chiara" : 1,
+    "Trento - via Bolzano" : 6
+}
+
+points_map = {
+    "Trento - S. Chiara": (11.1262, 46.06292),
+    "Trento - via Bolzano":(11.11022, 46.10433),
 }
 
 dropdown_station = dcc.Dropdown(
@@ -301,6 +308,7 @@ header = html.Div(
 def create_download_file(n_clicks):
     """global fbk_data
     return dcc.send_data_frame(get_fbk_data().to_csv, "fbk_raw_data.csv")"""
+    print("CACHE DELETED")
     cache.clear()
 
 
@@ -467,9 +475,6 @@ def check_line_history(
         Input("btn_search_date", "n_clicks"),
         Input("check_history", "value"),
         Input("resistance-plot", "relayoutData"),
-        # Input("heater-plot", "relayoutData"),
-        # Input("voltage-plot", "relayoutData"),
-        # Input("bosch-plot", "relayoutData")
     ],
     [
         State("resistance-plot", "figure"),
@@ -479,6 +484,7 @@ def check_line_history(
         State("my-date-picker-range", "start_date"),
         State("my-date-picker-range", "end_date"),
     ],
+    preprevent_initial_call=True,
 )
 def update_plots(
     selected_period,
@@ -497,7 +503,6 @@ def update_plots(
     global LAST_CLICKED
     if het_state and volt_state and bosch_state and res_state and "resistance-plot" == callback_context.triggered_id:
         try:
-            print("trigger 1 ")
             het_state["layout"]["xaxis"]["range"] = [
                 res_relayout_data["xaxis.range[0]"],
                 res_relayout_data["xaxis.range[1]"],
@@ -515,8 +520,6 @@ def update_plots(
             bosch_state["layout"]["xaxis"]["autorange"] = False
             return res_state, het_state, volt_state, bosch_state
         except Exception as e:
-            print(e)
-            print("trigger 2 ")
             het_state["layout"]["xaxis"]["autorange"] = True
             volt_state["layout"]["xaxis"]["autorange"] = True
             bosch_state["layout"]["xaxis"]["autorange"] = True
@@ -535,14 +538,16 @@ def update_plots(
         "selected-station" == callback_context.triggered_id
         and LAST_CLICKED == "btn_search_date"
     ):
+        start = datetime.now()
         fbk_data = utils.query_custom(start_date, end_date)
+        print(f"QUERY CUSTOM TIME : ", datetime.now() - start)
         LAST_CLICKED = "btn_search_date"
     else:
         fbk_data = cache_fbk_data(selected_period)
         LAST_CLICKED = "selected-period"
 
     dfFBK1 = fbk_data[
-        fbk_data["node_description"] == selected_station.split(" - ")[-1]
+        fbk_data["node_id"] == dict_stations[selected_station]
     ].dropna(inplace=False)
 
     dfFBK1["Data"] = pd.to_datetime(dfFBK1.ts.dt.date)
@@ -839,11 +844,11 @@ def update_graph(is_open):
         fig.add_trace(
             go.Scattermapbox(
                 mode="markers",
-                lon=[11.11022, 11.1262],  # Longitude of the specific places
-                lat=[46.10433, 46.06292],  # Latitude of the specific places
+                lon=[points_map['Trento - S. Chiara'][0], points_map['Trento - via Bolzano'][0]],  # Longitude of the specific places
+                lat=[points_map['Trento - S. Chiara'][1], points_map['Trento - via Bolzano'][1]],  # Latitude of the specific places
                 # Dots style
                 marker=dict(
-                    size=[16, 20],
+                    size=[16, 16],
                     color="green",
                     opacity=1,
                 ),
@@ -892,7 +897,6 @@ df = pd.read_csv(new_path+"/map.json")
 @callback(
     [
         Output("modal-map", "is_open"),
-        Output("click-output", "children"),
         Output("selected-station", "value"),
     ],
     [Input("open", "n_clicks"), Input("figure", "clickData")],
@@ -901,19 +905,10 @@ df = pd.read_csv(new_path+"/map.json")
 def toggle_modal(n_open, clickData, is_open):
     if n_open or clickData is not None:
         new_is_open = not is_open
-        selected_station = stations[0]  # Default value
         if clickData is not None:
-            lat = clickData["points"][0]["lat"]
-            lon = clickData["points"][0]["lon"]
-            coordinates = f"Clicked coordinates: Lat {lat}, Lon {lon}"
-            for point_lon, point_lat in points.keys():
-                if lon == point_lon and lat == point_lat:
-                    selected_station = points[
-                        (point_lon, point_lat)
-                    ]  # Set the dropdown value based on the clicked point
-                    return new_is_open, coordinates, selected_station
-        return new_is_open, None, selected_station
-    return is_open, None, stations[0]
+            station = clickData["points"][0]['text']
+            return new_is_open, station
+    return is_open, stations[0]
 
 
 ##########

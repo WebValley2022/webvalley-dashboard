@@ -48,14 +48,8 @@ def filter_fbk_data(dataframe: pd.DataFrame) -> pd.DataFrame:
         print(e)
         print("Usually this error with empty dataframe")"""
         
-    dataframe.drop_duplicates(["sensor_description", "ts", "node_description"], inplace=True)
+    dataframe.drop_duplicates(["sensor_description", "ts", "node_id"], inplace=True)
 
-    dataframe["node_description"] = dataframe["node_description"].str.replace(
-        "Appa 1 - ", ""
-    )
-    dataframe["node_description"] = dataframe["node_description"].str.replace(
-        "Appa 2 - ", ""
-    )
     #print(dataframe)
     return dataframe
 
@@ -99,8 +93,9 @@ def get_prediction_data() -> pd.DataFrame:
         os.path.join(os.path.dirname(__file__), PREDICTION_FILE_PATH),
         encoding="windows-1252",
     )
-
+    
 def query_custom(start_date, end_date)-> pd.DataFrame:
+    
     
     if start_date is not None and end_date is not None:
         start_date_object = date.fromisoformat(start_date)
@@ -129,7 +124,6 @@ def query_custom(start_date, end_date)-> pd.DataFrame:
         
     else:
         return pd.DataFrame    
-            
     return filter_fbk_data(fbk_data)
 
 

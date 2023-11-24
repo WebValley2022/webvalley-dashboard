@@ -28,20 +28,19 @@ def testnewdf(start, end, node=1):
     
     return f"""WITH sensor_data AS (
     SELECT
-        n.description AS node_description,
+        p_node_id,
         s.name AS sensor_description,
         p.sensor_ts AS ts,
         pd.r1 AS heater_res,
         pd.r2 AS signal_res,
         pd.volt AS volt,
-        p.attrs::json->>'P' AS p,
-        p.attrs::json->>'T' AS t,
-        p.attrs::json->>'RH' AS rh
+        p.p,
+        p.t,
+        p.rh
     FROM packet_data pd
         LEFT JOIN packet p ON p.id = pd.packet_id
         LEFT JOIN sensor s ON s.id = pd.sensor_id
-        LEFT JOIN node n ON n.id = p.node_id
-    where p.sensor_ts BETWEEN '{start}' AND '{end}' and n.id = {node}
+    where p.sensor_ts BETWEEN '{start}' AND '{end}' and p.node_id = {node}
 )
 SELECT
     ts,

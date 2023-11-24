@@ -1,229 +1,218 @@
 def query_params(node) :
     return f"""
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
-where n.id ={node}
+where p.node_id ={node}
 order by p.sensor_ts  DESC limit 8;
 """
 
 query_hour = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - INTERVAL '1 HOUR'
 order by p.sensor_ts;
 """
 
 query_day = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '24 hour'
 order by p.sensor_ts;
 """
 query_week = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '7 days'
 order by p.sensor_ts;
 """
 
 query_week_avg = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     date_trunc('hour', p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '7 days'
-group by date_trunc('hour', p.sensor_ts), n.description, s.name
+group by date_trunc('hour', p.sensor_ts), p.node_id, s.name
 order by date_trunc('hour', p.sensor_ts);
 """
 query_month = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '30 days'
 order by p.sensor_ts;
 """
 query_month_avg = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     date_trunc('hour', p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '30 days'
-group by date_trunc('hour', p.sensor_ts), n.description, s.name
+group by date_trunc('hour', p.sensor_ts), p.node_id, s.name
 order by date_trunc('hour', p.sensor_ts);
 """
 query_6moths = """
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '180 days'
 order by p.sensor_ts;
 """
 query_6moths_test= """
 SELECT
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     TIMESTAMP WITH TIME ZONE 'epoch' +
     INTERVAL '1 second' * round(extract('epoch' from p.sensor_ts) / 32400) * 32400 as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts >= NOW() - interval '180 days'
-GROUP BY round(extract('epoch' from p.sensor_ts) / 32400), n.description, s.name
+GROUP BY round(extract('epoch' from p.sensor_ts) / 32400), p.node_id, s.name
 ORDER BY round(extract('epoch' from p.sensor_ts) / 32400);
 """
 
 query_6moths_avg = """
-SELECT  n.description as node_description,
+SELECT  p.node_id,GROUP BY date_trunc('day', p.sensor_ts), 
+
     s.name as sensor_description,
-    min(p.sensor_ts) as ts,
+    max(p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
-where p.sensor_ts >= NOW() - interval '180 days' and n.id = 6
+where p.sensor_ts >= NOW() - interval '180 days'
 GROUP BY date_trunc('day', p.sensor_ts), 
-    FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
+    FLOOR(date_part('hour', p.sensor_ts) /8) , p.node_id, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 query_6moths_avg_node_1 = """
-SELECT  n.description as node_description,
+SELECT  p.node_id,
     s.name as sensor_description,
-    min(p.sensor_ts) as ts,
+    max(p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
-where p.sensor_ts >= NOW() - interval '180 days' and n.id = 1
+where p.sensor_ts >= NOW() - interval '180 days' and p.node_id = 1
 GROUP BY date_trunc('day', p.sensor_ts), 
-    FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
+    FLOOR(date_part('hour', p.sensor_ts) /8) , p.node_id, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 query_6moths_avg_node_6 = """
-SELECT  n.description as node_description,
+SELECT  p.node_id,
     s.name as sensor_description,
-    min(p.sensor_ts) as ts,
+    max(p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
-where p.sensor_ts >= NOW() - interval '180 days' and n.id = 6
+where p.sensor_ts >= NOW() - interval '180 days' and p.node_id = 6
 GROUP BY date_trunc('day', p.sensor_ts), 
-    FLOOR(date_part('hour', p.sensor_ts) /8) , n.description, s.name
+    FLOOR(date_part('hour', p.sensor_ts) /8) , p.node_id, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 query_sensor = """
@@ -249,82 +238,78 @@ from sensor pd;
 def q_custom_all(start, end):
     return f"""
     select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     p.sensor_ts as ts,
     pd.r1 as heater_res,
     pd.r2 as signal_res,
     pd.volt as volt,
-    p.attrs::json->'P' as p,
-    p.attrs::json->'T' as t,
-    p.attrs::json->'RH' as rh
+    p.p,
+    p.t,
+    p.rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts BETWEEN '{start}' AND '{end}'
 order by p.sensor_ts;
     """
     
 def q_custom_30min(start, end):
     return f"""
-SELECT  n.description as node_description,
+SELECT  p.node_id,
     s.name as sensor_description,
-    min(p.sensor_ts) as ts,
+    max(p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 FROM packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts BETWEEN '{start}' AND '{end}'
 GROUP BY date_trunc('hour', p.sensor_ts), 
-    FLOOR(date_part('minute', p.sensor_ts) /30) , n.description, s.name
+    FLOOR(date_part('minute', p.sensor_ts) /30) , p.node_id, s.name
 ORDER BY date_trunc('hour', p.sensor_ts);"""
 
 def q_custom_1H(start, end):
     return f"""
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
     date_trunc('hour', p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts BETWEEN '{start}' AND '{end}'
-group by date_trunc('hour', p.sensor_ts), n.description, s.name
+group by date_trunc('hour', p.sensor_ts), p.node_id, s.name
 order by date_trunc('hour', p.sensor_ts);"""
 
 def q_custom_H(start, end, H):
     return f"""
 select
-    n.description as node_description,
+    p.node_id,
     s.name as sensor_description,
-    min(p.sensor_ts) as ts,
+    max(p.sensor_ts) as ts,
     avg(pd.r1) as heater_res,
     avg(pd.r2) as signal_res,
     avg(pd.volt) as volt,
-    avg((p.attrs::json->>'P')::numeric) as p,
-    avg((p.attrs::json->>'T')::numeric) as t,
-    avg((p.attrs::json->>'RH')::numeric) as rh
+    cast(avg(p.p) as decimal(9,2)) as p,
+    cast(avg(p.t) as decimal(9,2)) as t,
+    cast(avg(p.rh) as decimal(9,2)) as rh
 from packet_data pd
     left join packet p on p.id = pd.packet_id
     left join sensor s on s.id = pd.sensor_id
-    left join node n on n.id = p.node_id
 where p.sensor_ts BETWEEN '{start}' AND '{end}'
 GROUP BY date_trunc('day', p.sensor_ts), 
-    FLOOR(date_part('hour', p.sensor_ts) /{H}) , n.description, s.name
+    FLOOR(date_part('hour', p.sensor_ts) /{H}) , p.node_id, s.name
 ORDER BY date_trunc('day', p.sensor_ts);"""
 
 
@@ -387,9 +372,9 @@ def general_query(avg: bool, time: str, start :str, end :str, interval :int):
     if avg:
         return f"""
     SELECT
-        n.description as node_description,
+        p.node_id,
         s.name as sensor_description,
-        min(p.sensor_ts) as ts,
+        max(p.sensor_ts) as ts,
         avg(pd.r1) as heater_res,
         avg(pd.r2) as signal_res,
         avg(pd.volt) as volt,
@@ -399,9 +384,9 @@ def general_query(avg: bool, time: str, start :str, end :str, interval :int):
     FROM packet_data pd
         LEFT JOIN packet p ON p.id = pd.packet_id
         LEFT JOIN sensor s ON s.id = pd.sensor_id
-        LEFT JOIN node n ON n.id = p.node_id
+
 WHERE p.sensor_ts BETWEEN '{start}' AND '{end}'
 GROUP BY date_trunc('{arr[key+1]}', p.sensor_ts), 
-    FLOOR(date_part('{arr[key]}', p.sensor_ts) /{interval}) , n.description, s.name
+    FLOOR(date_part('{arr[key]}', p.sensor_ts) /{interval}) , p.node_id, s.name
 ORDER BY date_trunc('{arr[key+1]}', p.sensor_ts);"""      
     
